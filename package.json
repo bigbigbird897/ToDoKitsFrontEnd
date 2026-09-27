@@ -1,0 +1,24 @@
+{
+  "name": "todokits-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "生活助手（LifeKit）前端：待办 / 统计 / 名言 / 读后感 / 好习惯 / 电子日记",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "^2.3.1",
+    "echarts": "^5.5.1",
+    "element-plus": "^2.7.8",
+    "pinia": "^2.1.7",
+    "vue": "^3.4.31",
+    "vue-router": "^4.4.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.1.0",
+    "vite": "^5.4.0"
+  }
+}
