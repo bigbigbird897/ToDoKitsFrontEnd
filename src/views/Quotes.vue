@@ -5,7 +5,7 @@
         <div class="page-title">名言警句</div>
         <div class="page-desc">记下那些有智慧的话，让它常伴左右。</div>
       </div>
-      <div><el-button @click="store.exportModule('quote')">导出</el-button><el-button type="primary" @click="openAdd()">记一句话</el-button></div>
+      <div><RangeExport kind="quote" /><el-button type="primary" @click="openAdd()">记一句话</el-button></div>
     </div>
 
     <div class="mb filters">
@@ -44,6 +44,7 @@
 
 <script setup>
 import { computed, ref, reactive } from 'vue'
+import RangeExport from '../components/RangeExport.vue'
 import { useStore } from '../store'
 const store = useStore()
 const q = ref(''); const tag = ref(''); const tagText = ref('')

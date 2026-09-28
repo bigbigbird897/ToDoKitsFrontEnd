@@ -6,7 +6,7 @@
         <div class="page-desc">以文件夹组织读书笔记，沉淀阅读所得。</div>
       </div>
       <div>
-        <el-button @click="store.exportModule('note')">导出</el-button>
+        <RangeExport kind="note" />
         <el-button type="primary" @click="openNote()">新建笔记</el-button>
       </div>
     </div>
@@ -67,6 +67,7 @@
 
 <script setup>
 import { computed, ref, reactive } from 'vue'
+import RangeExport from '../components/RangeExport.vue'
 import { useStore } from '../store'
 const store = useStore()
 const current = ref(store.folders[0] || '')

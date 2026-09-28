@@ -6,7 +6,7 @@
         <div class="page-desc">每天打卡，积累那些值得坚持的事。习惯分类与待办分类分开维护。</div>
       </div>
       <div>
-        <el-button @click="store.exportModule('habit')">导出</el-button>
+        <RangeExport kind="habit" />
         <el-button type="primary" @click="openAdd()">新增习惯</el-button>
       </div>
     </div>
@@ -72,6 +72,7 @@
 
 <script setup>
 import { computed, ref, reactive } from 'vue'
+import RangeExport from '../components/RangeExport.vue'
 import { useStore } from '../store'
 const store = useStore()
 const cat = ref(''); const manageCat = ref(false); const newCat = ref('')

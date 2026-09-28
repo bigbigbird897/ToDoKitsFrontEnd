@@ -25,10 +25,7 @@
         <button class="icon-btn" @click="store.toggleTheme" :title="store.dark ? '切换到浅色' : '切换到深色'" aria-label="切换主题">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg>
         </button>
-        <el-button class="top-export" @click="store.exportAll">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-          <span class="export-label">导出全部数据</span>
-        </el-button>
+        <RangeExport kind="all" text="导出全部数据" btnClass="top-export" />
         <span class="who" v-if="store.user" :title="store.user.username">{{ store.user.username }}</span>
         <el-button class="logout-btn" size="small" @click="store.logout">退出</el-button>
       </el-header>
@@ -43,6 +40,7 @@
 
 <script setup>
 import { useRoute } from 'vue-router'
+import RangeExport from './components/RangeExport.vue'
 import { useStore } from './store'
 import { onMounted } from 'vue'
 const route = useRoute()

@@ -291,26 +291,29 @@ export const useStore = defineStore('app', {
       const blob = new Blob(['\ufeff' + content], { type })
       const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); URL.revokeObjectURL(a.href)
     },
-    exportModule(kind) {
-      const map = {
-        todo: () => [['名称', '类别', '开始', '预计完成', '状态', '周期', '备注', '完成时间'], ...this.todos.map(t => [t.name, t.cat, t.start, t.due, t.status, t.repeat || '无', t.note, t.completedAt])],
-        habit: () => [['名称', '类别', '目标', '连续天数', '提醒', '今日完成'], ...this.habits.map(h => [h.name, h.cat, h.goal, h.streak, h.time, h.doneToday ? '是' : '否'])],
-        quote: () => [['内容', '作者', '来源', '标签', '日期'], ...this.quotes.map(q => [q.text, q.who, q.src, (q.tags || []).join('、'), q.date])],
-        note: () => [['文件夹', '标题', '内容', '日期'], ...this.notes.map(n => [n.folder, n.title, n.content, n.date])],
-        diary: () => [['日期', '星期', '地点', '天气', '内容'], ...this.diaries.map(d => [d.date, d.weekday, d.location, d.weather, d.text])]
-      }
-      const rows = (map[kind] || map.todo)()
-      this.download(`${kind}-${TODAY}.csv`, this.csv(rows))
+    exportModule(kind, from = '', to = '') {
+      const inRange = (date) => (!from || date >= from) && (!to || date <= to)
+      const todo = () => [['名称', '类别', '开始', '预计完成', '状态', '周期', '备注', '完成时间'], ...this.todos.filter(t => inRange(t.start)).map(t => [t.name, t.cat, t.start, t.due, t.status, t.repeat || '无', t.note, t.completedAt])]
+      const habit = () => [['名称', '类别', '目标', '连续天数', '提醒', '今日完成'], ...this.habits.map(h => [h.name, h.cat, h.goal, h.streak, h.time, h.doneToday ? '是' : '否'])]
+      const quote = () => [['内容', '作者', '来源', '标签', '日期'], ...this.quotes.filter(q => inRange(q.date)).map(q => [q.text, q.who, q.src, (q.tags || []).join('、'), q.date])]
+      const note = () => [['文件夹', '标题', '内容', '日期'], ...this.notes.filter(n => inRange(n.date)).map(n => [n.folder, n.title, n.content, n.date])]
+      const diary = () => [['日期', '星期', '地点', '天气', '内容'], ...this.diaries.filter(d => inRange(d.date)).map(d => [d.date, d.weekday, d.location, d.weather, d.text])]
+      const map = { todo, habit, quote, note, diary }
+      const rows = (map[kind] || todo)()
+      const suffix = (from || to) ? `-${from}~${to}` : ''
+      this.download(`${kind}${suffix}-${TODAY}.csv`, this.csv(rows))
       ElMessage.success('已导出')
     },
-    exportAll() {
+    exportAll(from = '', to = '') {
+      const inRange = (date) => (!from || date >= from) && (!to || date <= to)
       const parts = []
-      parts.push('# 待办\n' + this.csv([['名称', '类别', '开始', '预计完成', '状态', '周期', '备注', '完成时间'], ...this.todos.map(t => [t.name, t.cat, t.start, t.due, t.status, t.repeat || '无', t.note, t.completedAt])]))
+      parts.push('# 待办\n' + this.csv([['名称', '类别', '开始', '预计完成', '状态', '周期', '备注', '完成时间'], ...this.todos.filter(t => inRange(t.start)).map(t => [t.name, t.cat, t.start, t.due, t.status, t.repeat || '无', t.note, t.completedAt])]))
       parts.push('# 习惯\n' + this.csv([['名称', '类别', '目标', '连续天数', '提醒', '今日完成'], ...this.habits.map(h => [h.name, h.cat, h.goal, h.streak, h.time, h.doneToday ? '是' : '否'])]))
-      parts.push('# 名言\n' + this.csv([['内容', '作者', '来源', '标签', '日期'], ...this.quotes.map(q => [q.text, q.who, q.src, (q.tags || []).join('、'), q.date])]))
-      parts.push('# 读后感\n' + this.csv([['文件夹', '标题', '内容', '日期'], ...this.notes.map(n => [n.folder, n.title, n.content, n.date])]))
-      parts.push('# 日记\n' + this.csv([['日期', '星期', '地点', '天气', '内容'], ...this.diaries.map(d => [d.date, d.weekday, d.location, d.weather, d.text])]))
-      this.download(`生活助手全部数据-${TODAY}.csv`, parts.join('\n\n'))
+      parts.push('# 名言\n' + this.csv([['内容', '作者', '来源', '标签', '日期'], ...this.quotes.filter(q => inRange(q.date)).map(q => [q.text, q.who, q.src, (q.tags || []).join('、'), q.date])]))
+      parts.push('# 读后感\n' + this.csv([['文件夹', '标题', '内容', '日期'], ...this.notes.filter(n => inRange(n.date)).map(n => [n.folder, n.title, n.content, n.date])]))
+      parts.push('# 日记\n' + this.csv([['日期', '星期', '地点', '天气', '内容'], ...this.diaries.filter(d => inRange(d.date)).map(d => [d.date, d.weekday, d.location, d.weather, d.text])]))
+      const suffix = (from || to) ? `-${from}~${to}` : ''
+      this.download(`生活助手全部数据${suffix}-${TODAY}.csv`, parts.join('\n\n'))
       ElMessage.success('已导出全部数据')
     },
     exportStats() {

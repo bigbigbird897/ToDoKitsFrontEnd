@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div>
     <div class="view-head mb">
       <div>
@@ -6,85 +6,90 @@
         <div class="page-desc">按状态 / 类别筛选，支持周期重复；本周 / 本月 / 本年记录单独呈现。</div>
       </div>
       <div>
+        <RangeExport kind="todo" />
         <el-button @click="manageCat = true">管理分类</el-button>
         <el-button type="primary" @click="openAdd()">新增待办</el-button>
       </div>
     </div>
 
-    <div class="mb filters">
-      <el-input v-model="q" placeholder="搜索事项名称…" clearable style="width:220px"></el-input>
-      <el-select v-model="cat" placeholder="全部类别" clearable style="width:150px">
-        <el-option v-for="c in store.todoCats" :key="c" :label="c" :value="c"></el-option>
-      </el-select>
-      <el-select v-model="status" placeholder="全部状态" clearable style="width:150px">
-        <el-option label="未完成" value="doing"></el-option>
-        <el-option label="已完成" value="done"></el-option>
-        <el-option label="已逾期" value="overdue"></el-option>
-      </el-select>
-    </div>
+    <el-tabs v-model="activeTab" class="mb">
+      <el-tab-pane label="全部待办" name="all">
+        <div class="filters">
+          <el-input v-model="q" placeholder="搜索事项名称…" clearable style="width:220px"></el-input>
+          <el-select v-model="cat" placeholder="全部类别" clearable style="width:150px">
+            <el-option v-for="c in store.todoCats" :key="c" :label="c" :value="c"></el-option>
+          </el-select>
+          <el-select v-model="status" placeholder="全部状态" clearable style="width:150px">
+            <el-option label="未完成" value="doing"></el-option>
+            <el-option label="已完成" value="done"></el-option>
+            <el-option label="已逾期" value="overdue"></el-option>
+          </el-select>
+        </div>
+        <el-card shadow="never">
+          <template #header>全部待办（{{ filtered.length }}）</template>
+          <div class="table-wrap"><el-table :data="filtered" size="small" style="width:100%">
+            <el-table-column label="完成" width="60">
+              <template #default="{ row }">
+                <el-checkbox :model-value="row.status === 'done'" @change="store.toggleTodo(row.id)"></el-checkbox>
+              </template>
+            </el-table-column>
+            <el-table-column label="名称" min-width="180"><template #default="{ row }">{{ row.name }}</template></el-table-column>
+            <el-table-column label="类别" width="90"><template #default="{ row }"><span class="cat-cell"><i class="cat-dot" :style="{ background: catColor(row.cat) }"></i>{{ row.cat }}</span></template></el-table-column>
+            <el-table-column label="开始" width="110"><template #default="{ row }">{{ row.start }}</template></el-table-column>
+            <el-table-column label="预计完成" width="110"><template #default="{ row }">{{ row.due }}</template></el-table-column>
+            <el-table-column label="状态" width="90">
+              <template #default="{ row }">
+                <el-tag :type="row.status === 'done' ? 'success' : (row.due && row.due < today ? 'danger' : 'primary')" size="small" effect="light">
+                  {{ row.status === 'done' ? '已完成' : (row.due && row.due < today ? '已逾期' : '进行中') }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="周期" width="80"><template #default="{ row }">{{ row.repeat || '—' }}</template></el-table-column>
+            <el-table-column label="超期" width="80"><template #default="{ row }">{{ store.overdueDays(row) ? store.overdueDays(row) + ' 天' : '—' }}</template></el-table-column>
+            <el-table-column label="操作" width="120">
+              <template #default="{ row }">
+                <el-button link type="primary" @click="openEdit(row)">编辑</el-button>
+                <el-button link type="danger" @click="store.deleteTodo(row.id)">删除</el-button>
+              </template>
+            </el-table-column>
+          </el-table></div>
+          <el-empty v-if="!filtered.length" description="没有符合条件的待办" :image-size="60"></el-empty>
+        </el-card>
+      </el-tab-pane>
 
-    <el-card shadow="never" class="mb">
-      <template #header>本周记录（{{ weekTodos.length }}）</template>
-      <div v-for="t in weekTodos" :key="t.id" class="ov-item">
-        <el-checkbox :model-value="t.status === 'done'" @change="store.toggleTodo(t.id)"></el-checkbox>
-        <div class="meta"><div class="n">{{ t.name }}</div><div class="m">{{ t.cat }} · 预计 {{ t.due }}</div></div>
-        <el-tag size="small" :type="t.status === 'done' ? 'success' : 'primary'" effect="light">{{ t.status === 'done' ? '已完成' : '待办' }}</el-tag>
-      </div>
-      <el-empty v-if="!weekTodos.length" description="本周还没有待办" :image-size="60"></el-empty>
-    </el-card>
-
-    <el-card shadow="never" class="mb">
-      <template #header>本月记录（{{ monthTodos.length }}）</template>
-      <div v-for="t in monthTodos" :key="t.id" class="ov-item">
-        <el-checkbox :model-value="t.status === 'done'" @change="store.toggleTodo(t.id)"></el-checkbox>
-        <div class="meta"><div class="n">{{ t.name }}</div><div class="m">{{ t.cat }} · 预计 {{ t.due }}</div></div>
-        <el-tag size="small" :type="t.status === 'done' ? 'success' : 'primary'" effect="light">{{ t.status === 'done' ? '已完成' : '待办' }}</el-tag>
-      </div>
-      <el-empty v-if="!monthTodos.length" description="本月还没有待办" :image-size="60"></el-empty>
-    </el-card>
-
-    <el-card shadow="never" class="mb">
-      <template #header>本年记录（{{ yearTodos.length }}）</template>
-      <div v-for="t in yearTodos" :key="t.id" class="ov-item">
-        <el-checkbox :model-value="t.status === 'done'" @change="store.toggleTodo(t.id)"></el-checkbox>
-        <div class="meta"><div class="n">{{ t.name }}</div><div class="m">{{ t.cat }} · 预计 {{ t.due }}</div></div>
-        <el-tag size="small" :type="t.status === 'done' ? 'success' : 'primary'" effect="light">{{ t.status === 'done' ? '已完成' : '待办' }}</el-tag>
-      </div>
-      <el-empty v-if="!yearTodos.length" description="本年还没有待办" :image-size="60"></el-empty>
-    </el-card>
-
-    <el-card shadow="never">
-      <template #header>全部待办（{{ filtered.length }}）</template>
-      <div class="table-wrap"><el-table :data="filtered" size="small" style="width:100%">
-        <el-table-column label="完成" width="60">
-          <template #default="{ row }">
-            <el-checkbox :model-value="row.status === 'done'" @change="store.toggleTodo(row.id)"></el-checkbox>
-          </template>
-        </el-table-column>
-        <el-table-column label="名称" min-width="180"><template #default="{ row }">{{ row.name }}</template></el-table-column>
-        <el-table-column label="类别" width="90"><template #default="{ row }"><span class="cat-cell"><i class="cat-dot" :style="{ background: catColor(row.cat) }"></i>{{ row.cat }}</span></template></el-table-column>
-        <el-table-column label="开始" width="110"><template #default="{ row }">{{ row.start }}</template></el-table-column>
-        <el-table-column label="预计完成" width="110"><template #default="{ row }">{{ row.due }}</template></el-table-column>
-        <el-table-column label="状态" width="90">
-          <template #default="{ row }">
-            <el-tag :type="row.status === 'done' ? 'success' : (row.due && row.due < today ? 'danger' : 'primary')" size="small" effect="light">
-              {{ row.status === 'done' ? '已完成' : (row.due && row.due < today ? '已逾期' : '进行中') }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="周期" width="80"><template #default="{ row }">{{ row.repeat || '—' }}</template></el-table-column>
-        <el-table-column label="超期" width="80"><template #default="{ row }">{{ store.overdueDays(row) ? store.overdueDays(row) + ' 天' : '—' }}</template></el-table-column>
-        <el-table-column label="操作" width="120">
-          <template #default="{ row }">
-            <el-button link type="primary" @click="openEdit(row)">编辑</el-button>
-            <el-button link type="danger" @click="store.deleteTodo(row.id)">删除</el-button>
-          </template>
-        </el-table-column>
-        </el-table></div>
-      <el-empty v-if="!filtered.length" description="没有符合条件的待办" :image-size="60"></el-empty>
-    </el-card>
-
-
+      <el-tab-pane label="本周/本月/本年记录" name="records">
+        <el-card shadow="never" class="mb">
+          <template #header>本周记录（{{ weekTodos.length }}）</template>
+          <div v-for="t in weekTodos" :key="t.id" class="ov-item">
+            <el-checkbox :model-value="t.status === 'done'" @change="store.toggleTodo(t.id)"></el-checkbox>
+            <div class="meta"><div class="n">{{ t.name }}</div><div class="m">{{ t.cat }} · 预计 {{ t.due }}</div></div>
+            <el-tag size="small" :type="t.status === 'done' ? 'success' : 'primary'" effect="light">{{ t.status === 'done' ? '已完成' : '待办' }}</el-tag>
+            <el-button link type="primary" size="small" @click="openEdit(t)">编辑</el-button>
+          </div>
+          <el-empty v-if="!weekTodos.length" description="本周还没有待办" :image-size="60"></el-empty>
+        </el-card>
+        <el-card shadow="never" class="mb">
+          <template #header>本月记录（{{ monthTodos.length }}）</template>
+          <div v-for="t in monthTodos" :key="t.id" class="ov-item">
+            <el-checkbox :model-value="t.status === 'done'" @change="store.toggleTodo(t.id)"></el-checkbox>
+            <div class="meta"><div class="n">{{ t.name }}</div><div class="m">{{ t.cat }} · 预计 {{ t.due }}</div></div>
+            <el-tag size="small" :type="t.status === 'done' ? 'success' : 'primary'" effect="light">{{ t.status === 'done' ? '已完成' : '待办' }}</el-tag>
+            <el-button link type="primary" size="small" @click="openEdit(t)">编辑</el-button>
+          </div>
+          <el-empty v-if="!monthTodos.length" description="本月还没有待办" :image-size="60"></el-empty>
+        </el-card>
+        <el-card shadow="never">
+          <template #header>本年记录（{{ yearTodos.length }}）</template>
+          <div v-for="t in yearTodos" :key="t.id" class="ov-item">
+            <el-checkbox :model-value="t.status === 'done'" @change="store.toggleTodo(t.id)"></el-checkbox>
+            <div class="meta"><div class="n">{{ t.name }}</div><div class="m">{{ t.cat }} · 预计 {{ t.due }}</div></div>
+            <el-tag size="small" :type="t.status === 'done' ? 'success' : 'primary'" effect="light">{{ t.status === 'done' ? '已完成' : '待办' }}</el-tag>
+            <el-button link type="primary" size="small" @click="openEdit(t)">编辑</el-button>
+          </div>
+          <el-empty v-if="!yearTodos.length" description="本年还没有待办" :image-size="60"></el-empty>
+        </el-card>
+      </el-tab-pane>
+    </el-tabs>
 
     <el-dialog v-model="dlg.show" :title="dlg.editing ? '编辑待办' : '新增待办'" width="520px">
       <el-form label-width="80px">
@@ -128,10 +133,12 @@
 <script setup>
 import { computed, ref, reactive } from 'vue'
 import { useStore } from '../store'
+import RangeExport from '../components/RangeExport.vue'
 const store = useStore()
 const now = new Date()
 const pad = n => String(n).padStart(2, '0')
 const today = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
+const activeTab = ref('all')
 const q = ref(''); const cat = ref(''); const status = ref('')
 const manageCat = ref(false); const newCat = ref('')
 const dlg = reactive({ show: false, editing: false })

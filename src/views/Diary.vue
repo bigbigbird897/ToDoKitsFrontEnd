@@ -5,7 +5,7 @@
         <div class="page-title">电子日记</div>
         <div class="page-desc">每天写一点感悟，记录星期几、地点与天气。</div>
       </div>
-      <div><el-button @click="store.exportModule('diary')">导出</el-button><el-button type="primary" @click="openAdd()">写日记</el-button></div>
+      <div><RangeExport kind="diary" /><el-button type="primary" @click="openAdd()">写日记</el-button></div>
     </div>
 
     <div class="reading">
@@ -43,6 +43,7 @@
 
 <script setup>
 import { ref, reactive } from 'vue'
+import RangeExport from '../components/RangeExport.vue'
 import { useStore } from '../store'
 const store = useStore()
 const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六']
