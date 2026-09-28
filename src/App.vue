@@ -41,10 +41,11 @@
 <script setup>
 import { useRoute } from 'vue-router'
 import { useStore } from './store'
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 const route = useRoute()
 const store = useStore()
 const today = new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-')
+onMounted(() => { store.init() })
 const menus = [
   { path: '/', label: '工作台', icon: 'M4 13h6V4H4zM14 20h6V11h-6zM4 20h6v-4H4zM14 9h6V4h-6z' },
   { path: '/todos', label: '待办事项', icon: 'M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11' },

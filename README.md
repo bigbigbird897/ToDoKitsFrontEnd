@@ -38,10 +38,11 @@ npm run build      # 产出 dist/
 
 ## 接入后端
 
-`src/api/index.js` 中 `USE_BACKEND = false` 默认本地内存模拟；置 `true` 后通过 `/api/*` 调用后端（契约与后端 Controller 一致）。后端启动后亦会托管本目录 `dist/`。
+已开启后端接入：`src/api/index.js` 中 `USE_BACKEND = true`，所有数据通过 `/api/*` 从后端 PostgreSQL 存取；`store/index.js` 启动时调用 `init()` 从数据库加载全部模块（待办/习惯/名言/读后感/日记/分类），增删改查全部走后端接口。开发时 `vite.config.js` 将 `/api` 代理到 `http://localhost:5000`；后端启动后亦会托管本目录 `dist/`。
 
 ## 变更记录
 
 - 2026-09-27：工程创建，7 视图 + store + api 契约完成，build 通过。
 - 2026-09-27：主题对齐静态预览定稿（暖纸色）；修复 Reading 图标（emoji → 内联 SVG）。
 - 2026-09-28：移动端（≤640px）UI 优化——顶栏导出改图标（去拥挤）、正文/表单字号加大（≥15px/16px 防 iOS 聚焦缩放）、筛选控件堆叠全宽、表格横向滚动不截断；移除侧栏「生活助手」品牌标识（顶栏保留标题与功能图标）。
+- 2026-09-28：前后端接线——`USE_BACKEND=true`，store 启动 `init()` 从数据库加载全部模块，所有增删改查改走后端接口（待办/习惯/名言/读后感/日记/分类），经 vite 代理 `/api`→5000；端到端实测从 PostgreSQL 加载数据渲染通过。

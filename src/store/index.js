@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia'
 import { ElMessage } from 'element-plus'
+import { api } from '../api'
 
-// 数据格式工具
+// ===== 数据格式工具 =====
 const fmt = (d) => {
   const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, '0'), day = String(d.getDate()).padStart(2, '0')
   return `${y}-${m}-${day}`
@@ -12,53 +13,22 @@ const WEEK = ['日', '一', '二', '三', '四', '五', '六']
 const weekdayCN = (d) => `星期${WEEK[new Date(d).getDay()]}`
 const TODAY = fmt(new Date())
 
+// 后端名言 tags 是逗号分隔字符串，前端统一为数组
+const quoteTags = (q) => (q.tags ? String(q.tags).split(',').filter(Boolean) : [])
+
 export const useStore = defineStore('app', {
   state: () => ({
-    // 待办
-    todoCats: ['工作', '学习', '个人', '财务', '旅游', '健康'],
-    todos: [
-      { id: 1, name: '完成季度述职报告', cat: '工作', start: '2026-09-20', due: '2026-09-28', status: 'doing', repeat: '', note: '', completedAt: '' },
-      { id: 2, name: '预订周末苏州周边行程', cat: '旅游', start: '2026-09-22', due: '2026-09-26', status: 'done', repeat: '', note: '', completedAt: fmt(addDays(new Date(), -1)) },
-      { id: 3, name: '整理硬盘里的一批照片', cat: '个人', start: '2026-09-10', due: '2026-09-25', status: 'done', repeat: '', note: '', completedAt: TODAY },
-      { id: 4, name: '学习 Vue Router', cat: '学习', start: '2026-09-01', due: '2026-09-30', status: 'doing', repeat: '', note: '', completedAt: '' },
-      { id: 5, name: '去银行办社保卡', cat: '财务', start: '2026-09-05', due: '2026-09-18', status: 'done', repeat: '', note: '', completedAt: fmt(addDays(new Date(), -2)) },
-      { id: 6, name: '收拾阳台绿植', cat: '个人', start: '2026-09-24', due: '2026-09-29', status: 'doing', repeat: '', note: '', completedAt: '' },
-      { id: 7, name: '晨跑 30 分钟', cat: '健康', start: '2026-09-01', due: '2026-09-30', status: 'doing', repeat: 'daily', note: '', completedAt: '' },
-      { id: 8, name: '月度复盘', cat: '工作', start: '2026-09-01', due: '2026-09-30', status: 'done', repeat: 'monthly', note: '', completedAt: fmt(addDays(new Date(), -4)) },
-      { id: 9, name: '读一章《百年孤独》', cat: '学习', start: '2026-09-01', due: '2026-09-30', status: 'done', repeat: 'daily', note: '', completedAt: fmt(addDays(new Date(), -6)) },
-      { id: 10, name: '体检预约', cat: '健康', start: '2026-09-15', due: '2026-09-22', status: 'done', repeat: '', note: '', completedAt: fmt(addDays(new Date(), -3)) },
-      { id: 11, name: '整理读书笔记', cat: '学习', start: '2026-09-21', due: '2026-09-27', status: 'done', repeat: '', note: '', completedAt: fmt(addDays(new Date(), -5)) }
-    ],
-    // 好习惯（类别独立）
-    habitCats: ['健康', '学习', '生活'],
-    habits: [
-      { id: 1, name: '早起后喝一杯温水', cat: '健康', goal: '每天一次', streak: 12, time: '07:30', doneToday: true },
-      { id: 2, name: '阅读 30 分钟', cat: '学习', goal: '每天一次', streak: 58, time: '21:00', doneToday: true },
-      { id: 3, name: '每日运动', cat: '健康', goal: '每天一次', streak: 23, time: '18:30', doneToday: true },
-      { id: 4, name: '记账', cat: '生活', goal: '每天一次', streak: 6, time: '22:00', doneToday: false }
-    ],
-    // 名言
-    quoteTags: ['时间', '成长', '行动', '心态'],
-    quotes: [
-      { id: 1, text: '如果你想要一个跟别人不一样的人生，就不要和别人一样的时间表。', who: '罗振宇', src: '《罗辑思维》', tags: ['时间'], date: '2026-09-10' },
-      { id: 2, text: '把时间放在哪里，成果就出现在哪里。', who: '李笑来', src: '《把时间当作朋友》', tags: ['时间', '行动'], date: '2026-09-15' },
-      { id: 3, text: '种一棵树最好的时间是十年前，其次是现在。', who: '佚名', src: '', tags: ['行动', '心态'], date: '2026-09-20' }
-    ],
-    // 读后感：文件夹 + 笔记
-    folders: ['文学', '历史', '哲学', '个人成长', '科技'],
-    notes: [
-      { id: 1, folder: '文学', title: '《活着》读后感', content: '福贵的一生，把「活着」这个词写到了极致。苦难不是生活的全部，但承受苦难的坚韧，是生活本身。', date: '2026-09-18' },
-      { id: 2, folder: '文学', title: '《百年孤独》札记', content: '马孔多的历史，是一本写满了孤独的家族史。布恩迪亚家族七代人的兴衰，映照出人类对孤独的逃避与拥抱。', date: '2026-09-06' },
-      { id: 3, folder: '历史', title: '《万历十五年》笔记', content: '以万历十五年这个看似平淡的年份切入，剖析明代文官制度的运转与僵化，以小见大。', date: '2026-08-28' },
-      { id: 4, folder: '哲学', title: '《沉思录》摘记', content: '「你所做的每一件事，都要像人生的最后一件事那样去做。」斯多葛的平静与自省。', date: '2026-09-12' },
-      { id: 5, folder: '个人成长', title: '《把时间当作朋友》读后感', content: '时间不可管理，能管理的只有自己。积累、耐心、思考，是时间给我们的回报。', date: '2026-09-22' },
-      { id: 6, folder: '科技', title: '《失控》读书笔记', content: '失控不是混乱，而是去中心化的涌现。蜂群、市场、生命，都是在没有中央控制下自组织的智慧。', date: '2026-08-15' }
-    ],
-    // 电子日记
-    diaries: [
-      { id: 1, date: TODAY, weekday: weekdayCN(TODAY), location: '苏州', weather: '晴', text: '今天状态不错，把积压的待办清掉了大半。晚上读了几页书，心很静。' },
-      { id: 2, date: fmt(addDays(new Date(), -1)), weekday: weekdayCN(addDays(new Date(), -1)), location: '苏州', weather: '多云', text: '周末去了趟山塘街，秋天的风很舒服。晚上和朋友聊了聊近况，有些启发。' }
-    ],
+    // 初始为空，启动后 init() 从后端数据库加载
+    todoCats: [],
+    todos: [],
+    habitCats: [],
+    habits: [],
+    quoteTags: [],
+    quotes: [],
+    folders: [],
+    notes: [],
+    diaries: [],
+    loaded: false,
     // 界面
     dark: false,
     menuOpen: false,
@@ -100,56 +70,185 @@ export const useStore = defineStore('app', {
       const d = diffDays(t.due, TODAY)
       return d < 0 ? -d : 0
     },
-    // ---- 待办 ----
-    addTodo(p) {
-      const id = Math.max(0, ...this.todos.map(t => t.id)) + 1
-      this.todos.push({ id, ...p, status: 'doing', completedAt: '' })
-      ElMessage.success('已创建待办')
-    },
-    updateTodo(todo) { const i = this.todos.findIndex(t => t.id === todo.id); if (i > -1) this.todos.splice(i, 1, todo) },
-    deleteTodo(id) { this.todos = this.todos.filter(t => t.id !== id) },
-    toggleTodo(id) {
-      const t = this.todos.find(x => x.id === id)
-      if (!t) return
-      if (t.status === 'done') { t.status = 'doing'; t.completedAt = '' }
-      else {
-        t.status = 'done'; t.completedAt = TODAY
-        if (t.repeat) ElMessage.info(`周期事项（${t.repeat}）已完成，明天会自动生成新的一项`)
+
+    // ---- 启动：从后端数据库加载全部数据 ----
+    async init() {
+      try {
+        const [cats, todos, hcats, habits, quotes, folders, notes, diaries] = await Promise.all([
+          api.getTodoCats(), api.getTodos(), api.getHabitCats(), api.getHabits(),
+          api.getQuotes(), api.getFolders(), api.getNotes(), api.getDiaries()
+        ])
+        this.todoCats = cats.length ? cats : ['工作', '学习', '个人', '财务', '旅游', '健康']
+        this.todos = todos || []
+        this.habitCats = hcats.length ? hcats : ['健康', '学习', '生活']
+        this.habits = habits || []
+        this.quotes = (quotes || []).map(q => ({ ...q, tags: quoteTags(q) }))
+        this.quoteTags = [...new Set(this.quotes.flatMap(q => q.tags))].filter(Boolean)
+        this.folders = folders || []
+        this.notes = notes || []
+        this.diaries = diaries || []
+        this.loaded = true
+        ElMessage.success('数据已从数据库加载')
+      } catch (e) {
+        ElMessage.error('连接后端失败：' + (e && e.message ? e.message : e))
       }
     },
-    addTodoCat(c) { if (c && !this.todoCats.includes(c)) { this.todoCats.push(c); ElMessage.success('已新增分类') } },
-    delTodoCat(c) {
+
+    // ---- 待办 ----
+    async addTodo(p) {
+      try {
+        const input = { name: p.name, cat: p.cat, start: p.start, due: p.due, status: p.status || 'doing', repeat: p.repeat || '', note: p.note || '' }
+        const todo = await api.createTodo(input)
+        this.todos.unshift(todo)
+        ElMessage.success('已创建待办')
+      } catch (e) { ElMessage.error('创建待办失败：' + (e && e.message ? e.message : e)) }
+    },
+    async updateTodo(todo) {
+      try {
+        const input = { name: todo.name, cat: todo.cat, start: todo.start, due: todo.due, status: todo.status, repeat: todo.repeat || '', note: todo.note || '' }
+        const updated = await api.updateTodo(todo.id, input)
+        const i = this.todos.findIndex(t => t.id === todo.id); if (i > -1) this.todos.splice(i, 1, updated)
+      } catch (e) { ElMessage.error('更新待办失败：' + (e && e.message ? e.message : e)) }
+    },
+    async deleteTodo(id) {
+      try { await api.deleteTodo(id); this.todos = this.todos.filter(t => t.id !== id) }
+      catch (e) { ElMessage.error('删除待办失败：' + (e && e.message ? e.message : e)) }
+    },
+    async toggleTodo(id) {
+      try {
+        const t = await api.toggleTodo(id)
+        const i = this.todos.findIndex(x => x.id === id); if (i > -1) this.todos.splice(i, 1, t)
+        if (t.status === 'done' && t.repeat) ElMessage.info(`周期事项（${t.repeat}）已完成，明天会自动生成新的一项`)
+      } catch (e) { ElMessage.error('操作失败：' + (e && e.message ? e.message : e)) }
+    },
+    async addTodoCat(c) {
+      if (c && !this.todoCats.includes(c)) {
+        try { await api.addTodoCat({ name: c }); this.todoCats.push(c); ElMessage.success('已新增分类') }
+        catch (e) { ElMessage.error('新增分类失败：' + (e && e.message ? e.message : e)) }
+      }
+    },
+    async delTodoCat(c) {
       if (this.todos.some(t => t.cat === c)) { ElMessage.warning('该分类下有待办，不能删除'); return }
-      this.todoCats = this.todoCats.filter(x => x !== c)
+      try { await api.deleteTodoCat(c); this.todoCats = this.todoCats.filter(x => x !== c) }
+      catch (e) { ElMessage.error('删除分类失败：' + (e && e.message ? e.message : e)) }
     },
+
     // ---- 习惯 ----
-    addHabit(p) { const id = Math.max(0, ...this.habits.map(h => h.id)) + 1; this.habits.push({ id, ...p, streak: 0, doneToday: false }) },
-    updateHabit(h) { const i = this.habits.findIndex(x => x.id === h.id); if (i > -1) this.habits.splice(i, 1, h) },
-    deleteHabit(id) { this.habits = this.habits.filter(h => h.id !== id) },
-    toggleHabit(id) { const h = this.habits.find(x => x.id === id); if (!h) return; h.doneToday = !h.doneToday; if (h.doneToday) h.streak += 1; else h.streak = Math.max(0, h.streak - 1) },
-    addHabitCat(c) { if (c && !this.habitCats.includes(c)) this.habitCats.push(c) },
-    delHabitCat(c) { if (this.habits.some(h => h.cat === c)) { ElMessage.warning('该分类下有习惯，不能删除'); return } this.habitCats = this.habitCats.filter(x => x !== c) },
-    // ---- 名言 ----
-    addQuote(p) { const id = Math.max(0, ...this.quotes.map(q => q.id)) + 1; this.quotes.push({ id, ...p, date: TODAY }); this.syncQuoteTags() },
-    updateQuote(q) { const i = this.quotes.findIndex(x => x.id === q.id); if (i > -1) this.quotes.splice(i, 1, q); this.syncQuoteTags() },
-    deleteQuote(id) { this.quotes = this.quotes.filter(q => q.id !== id); this.syncQuoteTags() },
-    syncQuoteTags() { this.quoteTags = [...new Set(this.quotes.flatMap(q => q.tags || []))] },
-    // ---- 读后感 ----
-    addFolder(n) { if (n && !this.folders.includes(n)) { this.folders.push(n); ElMessage.success('已创建文件夹') } },
-    delFolder(f) { if (this.notes.some(n => n.folder === f)) { ElMessage.warning('该文件夹下有笔记，不能删除'); return } this.folders = this.folders.filter(x => x !== f) },
-    addNote(p) { const id = Math.max(0, ...this.notes.map(n => n.id)) + 1; this.notes.push({ id, ...p, date: TODAY }) },
-    updateNote(n) { const i = this.notes.findIndex(x => x.id === n.id); if (i > -1) this.notes.splice(i, 1, n) },
-    deleteNote(id) { this.notes = this.notes.filter(n => n.id !== id) },
-    // ---- 日记 ----
-    addDiary(p) {
-      p.date = p.date || TODAY; p.weekday = weekdayCN(p.date)
-      const id = Math.max(0, ...this.diaries.map(d => d.id)) + 1
-      this.diaries.unshift({ id, ...p })
+    async addHabit(p) {
+      try {
+        const input = { name: p.name, cat: p.cat, goal: p.goal, time: p.time }
+        const h = await api.createHabit(input)
+        this.habits.push(h)
+      } catch (e) { ElMessage.error('创建习惯失败：' + (e && e.message ? e.message : e)) }
     },
-    updateDiary(d) { const i = this.diaries.findIndex(x => x.id === d.id); if (i > -1) this.diaries.splice(i, 1, d) },
-    deleteDiary(id) { this.diaries = this.diaries.filter(d => d.id !== id) },
+    async updateHabit(h) {
+      try {
+        const input = { name: h.name, cat: h.cat, goal: h.goal, time: h.time }
+        const updated = await api.updateHabit(h.id, input)
+        const i = this.habits.findIndex(x => x.id === h.id); if (i > -1) this.habits.splice(i, 1, updated)
+      } catch (e) { ElMessage.error('更新习惯失败：' + (e && e.message ? e.message : e)) }
+    },
+    async deleteHabit(id) {
+      try { await api.deleteHabit(id); this.habits = this.habits.filter(h => h.id !== id) }
+      catch (e) { ElMessage.error('删除习惯失败：' + (e && e.message ? e.message : e)) }
+    },
+    async toggleHabit(id) {
+      try {
+        const h = await api.toggleHabit(id)
+        const i = this.habits.findIndex(x => x.id === id); if (i > -1) this.habits.splice(i, 1, h)
+      } catch (e) { ElMessage.error('打卡失败：' + (e && e.message ? e.message : e)) }
+    },
+    async addHabitCat(c) {
+      if (c && !this.habitCats.includes(c)) {
+        try { await api.addHabitCat({ name: c }); this.habitCats.push(c) }
+        catch (e) { ElMessage.error('新增分类失败：' + (e && e.message ? e.message : e)) }
+      }
+    },
+    async delHabitCat(c) {
+      if (this.habits.some(h => h.cat === c)) { ElMessage.warning('该分类下有习惯，不能删除'); return }
+      try { await api.deleteHabitCat(c); this.habitCats = this.habitCats.filter(x => x !== c) }
+      catch (e) { ElMessage.error('删除分类失败：' + (e && e.message ? e.message : e)) }
+    },
+
+    // ---- 名言（tags 数组 ↔ 后端逗号字符串）----
+    async addQuote(p) {
+      try {
+        const input = { text: p.text, who: p.who, src: p.src, tags: (p.tags || []).join(','), date: p.date || TODAY }
+        const q = await api.createQuote(input)
+        this.quotes.unshift({ ...q, tags: quoteTags(q) })
+        this.syncQuoteTags()
+      } catch (e) { ElMessage.error('创建名言失败：' + (e && e.message ? e.message : e)) }
+    },
+    async updateQuote(q) {
+      try {
+        const input = { text: q.text, who: q.who, src: q.src, tags: (q.tags || []).join(','), date: q.date || TODAY }
+        const updated = await api.updateQuote(q.id, input)
+        const m = { ...updated, tags: quoteTags(updated) }
+        const i = this.quotes.findIndex(x => x.id === q.id); if (i > -1) this.quotes.splice(i, 1, m)
+        this.syncQuoteTags()
+      } catch (e) { ElMessage.error('更新名言失败：' + (e && e.message ? e.message : e)) }
+    },
+    async deleteQuote(id) {
+      try { await api.deleteQuote(id); this.quotes = this.quotes.filter(q => q.id !== id); this.syncQuoteTags() }
+      catch (e) { ElMessage.error('删除名言失败：' + (e && e.message ? e.message : e)) }
+    },
+    syncQuoteTags() { this.quoteTags = [...new Set(this.quotes.flatMap(q => q.tags || []))] },
+
+    // ---- 读后感：文件夹 + 笔记 ----
+    async addFolder(n) {
+      if (n && !this.folders.includes(n)) {
+        try { await api.addFolder({ name: n }); this.folders.push(n); ElMessage.success('已创建文件夹') }
+        catch (e) { ElMessage.error('创建文件夹失败：' + (e && e.message ? e.message : e)) }
+      }
+    },
+    async delFolder(f) {
+      if (this.notes.some(n => n.folder === f)) { ElMessage.warning('该文件夹下有笔记，不能删除'); return }
+      try { await api.deleteFolder(f); this.folders = this.folders.filter(x => x !== f) }
+      catch (e) { ElMessage.error('删除文件夹失败：' + (e && e.message ? e.message : e)) }
+    },
+    async addNote(p) {
+      try {
+        const input = { folder: p.folder, title: p.title, content: p.content, date: p.date || TODAY }
+        const note = await api.createNote(input)
+        this.notes.unshift(note)
+      } catch (e) { ElMessage.error('保存笔记失败：' + (e && e.message ? e.message : e)) }
+    },
+    async updateNote(n) {
+      try {
+        const input = { folder: n.folder, title: n.title, content: n.content, date: n.date }
+        const updated = await api.updateNote(n.id, input)
+        const i = this.notes.findIndex(x => x.id === n.id); if (i > -1) this.notes.splice(i, 1, updated)
+      } catch (e) { ElMessage.error('更新笔记失败：' + (e && e.message ? e.message : e)) }
+    },
+    async deleteNote(id) {
+      try { await api.deleteNote(id); this.notes = this.notes.filter(n => n.id !== id) }
+      catch (e) { ElMessage.error('删除笔记失败：' + (e && e.message ? e.message : e)) }
+    },
+
+    // ---- 日记 ----
+    async addDiary(p) {
+      try {
+        p.date = p.date || TODAY; p.weekday = weekdayCN(p.date)
+        const input = { date: p.date, weekday: p.weekday, location: p.location, weather: p.weather, text: p.text }
+        const d = await api.createDiary(input)
+        this.diaries.unshift(d)
+      } catch (e) { ElMessage.error('保存日记失败：' + (e && e.message ? e.message : e)) }
+    },
+    async updateDiary(d) {
+      try {
+        const input = { date: d.date, weekday: d.weekday, location: d.location, weather: d.weather, text: d.text }
+        const updated = await api.updateDiary(d.id, input)
+        const i = this.diaries.findIndex(x => x.id === d.id); if (i > -1) this.diaries.splice(i, 1, updated)
+      } catch (e) { ElMessage.error('更新日记失败：' + (e && e.message ? e.message : e)) }
+    },
+    async deleteDiary(id) {
+      try { await api.deleteDiary(id); this.diaries = this.diaries.filter(d => d.id !== id) }
+      catch (e) { ElMessage.error('删除日记失败：' + (e && e.message ? e.message : e)) }
+    },
+
     // ---- 主题 ----
     toggleTheme() { this.dark = !this.dark; document.documentElement.classList.toggle('dark', this.dark); localStorage.setItem('lk-theme', this.dark ? 'dark' : 'light') },
+
     // ---- 导出 ----
     csv(rows) { return rows.map(r => r.map(c => `"${String(c ?? '').replace(/"/g, '""')}"`).join(',')).join('\n') },
     download(name, content, type = 'text/csv') {
