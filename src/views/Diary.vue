@@ -8,7 +8,7 @@
       <div><el-button @click="store.exportModule('diary')">导出</el-button><el-button type="primary" @click="openAdd()">写日记</el-button></div>
     </div>
 
-    <div style="display:grid;grid-template-columns:260px 1fr;gap:16px" class="reading">
+    <div class="reading">
       <el-card shadow="never">
         <template #header>日记列表</template>
         <div v-for="d in store.diaries" :key="d.id" class="notes-row" :class="{ active: current === d.id }" @click="current = d.id; fill(d)">
