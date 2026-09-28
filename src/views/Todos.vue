@@ -1,9 +1,9 @@
-<template>
+﻿<template>
   <div>
     <div class="view-head mb">
       <div>
         <div class="page-title">待办事项</div>
-        <div class="page-desc">按状态 / 类别筛选，支持周期重复；一周记录单独呈现。</div>
+        <div class="page-desc">按状态 / 类别筛选，支持周期重复；本周 / 本月 / 本年记录单独呈现。</div>
       </div>
       <div>
         <el-button @click="manageCat = true">管理分类</el-button>
@@ -24,6 +24,36 @@
     </div>
 
     <el-card shadow="never" class="mb">
+      <template #header>本周记录（{{ weekTodos.length }}）</template>
+      <div v-for="t in weekTodos" :key="t.id" class="ov-item">
+        <el-checkbox :model-value="t.status === 'done'" @change="store.toggleTodo(t.id)"></el-checkbox>
+        <div class="meta"><div class="n">{{ t.name }}</div><div class="m">{{ t.cat }} · 预计 {{ t.due }}</div></div>
+        <el-tag size="small" :type="t.status === 'done' ? 'success' : 'primary'" effect="light">{{ t.status === 'done' ? '已完成' : '待办' }}</el-tag>
+      </div>
+      <el-empty v-if="!weekTodos.length" description="本周还没有待办" :image-size="60"></el-empty>
+    </el-card>
+
+    <el-card shadow="never" class="mb">
+      <template #header>本月记录（{{ monthTodos.length }}）</template>
+      <div v-for="t in monthTodos" :key="t.id" class="ov-item">
+        <el-checkbox :model-value="t.status === 'done'" @change="store.toggleTodo(t.id)"></el-checkbox>
+        <div class="meta"><div class="n">{{ t.name }}</div><div class="m">{{ t.cat }} · 预计 {{ t.due }}</div></div>
+        <el-tag size="small" :type="t.status === 'done' ? 'success' : 'primary'" effect="light">{{ t.status === 'done' ? '已完成' : '待办' }}</el-tag>
+      </div>
+      <el-empty v-if="!monthTodos.length" description="本月还没有待办" :image-size="60"></el-empty>
+    </el-card>
+
+    <el-card shadow="never" class="mb">
+      <template #header>本年记录（{{ yearTodos.length }}）</template>
+      <div v-for="t in yearTodos" :key="t.id" class="ov-item">
+        <el-checkbox :model-value="t.status === 'done'" @change="store.toggleTodo(t.id)"></el-checkbox>
+        <div class="meta"><div class="n">{{ t.name }}</div><div class="m">{{ t.cat }} · 预计 {{ t.due }}</div></div>
+        <el-tag size="small" :type="t.status === 'done' ? 'success' : 'primary'" effect="light">{{ t.status === 'done' ? '已完成' : '待办' }}</el-tag>
+      </div>
+      <el-empty v-if="!yearTodos.length" description="本年还没有待办" :image-size="60"></el-empty>
+    </el-card>
+
+    <el-card shadow="never">
       <template #header>全部待办（{{ filtered.length }}）</template>
       <div class="table-wrap"><el-table :data="filtered" size="small" style="width:100%">
         <el-table-column label="完成" width="60">
@@ -54,15 +84,7 @@
       <el-empty v-if="!filtered.length" description="没有符合条件的待办" :image-size="60"></el-empty>
     </el-card>
 
-    <el-card shadow="never">
-      <template #header>本周记录（{{ weekTodos.length }}）</template>
-      <div v-for="t in weekTodos" :key="t.id" class="ov-item">
-        <el-checkbox :model-value="t.status === 'done'" @change="store.toggleTodo(t.id)"></el-checkbox>
-        <div class="meta"><div class="n">{{ t.name }}</div><div class="m">{{ t.cat }} · 预计 {{ t.due }}</div></div>
-        <el-tag size="small" :type="t.status === 'done' ? 'success' : 'primary'" effect="light">{{ t.status === 'done' ? '已完成' : '待办' }}</el-tag>
-      </div>
-      <el-empty v-if="!weekTodos.length" description="本周还没有待办" :image-size="60"></el-empty>
-    </el-card>
+
 
     <el-dialog v-model="dlg.show" :title="dlg.editing ? '编辑待办' : '新增待办'" width="520px">
       <el-form label-width="80px">
@@ -107,7 +129,9 @@
 import { computed, ref, reactive } from 'vue'
 import { useStore } from '../store'
 const store = useStore()
-const today = new Date().toISOString().slice(0, 10)
+const now = new Date()
+const pad = n => String(n).padStart(2, '0')
+const today = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
 const q = ref(''); const cat = ref(''); const status = ref('')
 const manageCat = ref(false); const newCat = ref('')
 const dlg = reactive({ show: false, editing: false })
@@ -126,8 +150,15 @@ const filtered = computed(() => {
     return true
   })
 })
-const weekAgo = today.slice(0, 8) + '01'
-const weekTodos = computed(() => store.todos.filter(t => t.start >= weekAgo))
+const d = now.getDay()
+const mondayOff = d === 0 ? -6 : 1 - d
+const mon = new Date(now.getFullYear(), now.getMonth(), now.getDate() + mondayOff)
+const weekStart = `${mon.getFullYear()}-${pad(mon.getMonth() + 1)}-${pad(mon.getDate())}`
+const monthStart = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-01`
+const yearStart = `${now.getFullYear()}-01-01`
+const weekTodos = computed(() => store.todos.filter(t => t.start >= weekStart))
+const monthTodos = computed(() => store.todos.filter(t => t.start >= monthStart))
+const yearTodos = computed(() => store.todos.filter(t => t.start >= yearStart))
 function openAdd() { Object.assign(form, emptyForm()); dlg.editing = false; dlg.show = true }
 function openEdit(t) { Object.assign(form, { ...t }); dlg.editing = true; dlg.show = true }
 function save() {
