@@ -47,9 +47,11 @@ body {
   transition: transform .25s ease;
   z-index: 60;
 }
-.brand { display: flex; align-items: center; gap: 10px; height: 62px; padding: 0 20px; font-weight: 700; font-size: 15px; letter-spacing: .5px; border-bottom: 1px solid var(--el-border-color); }
-.brand svg { color: var(--el-color-primary); }
-.menu { border-right: none; padding: 10px 12px; background: transparent; }
+.side-pad { height: 14px; }
+.top-export { display: inline-flex; align-items: center; gap: 6px; }
+.filters { display: flex; gap: 10px; flex-wrap: wrap; }
+.table-wrap { width: 100%; }
+.menu { border-right: none; padding: 4px 12px; background: transparent; }
 .menu .el-menu-item, .menu .el-sub-menu__title { border-radius: 8px; margin: 2px 0; height: 44px; line-height: 44px; }
 .menu .el-menu-item { color: var(--el-text-color-regular); }
 .menu .el-menu-item:hover { background: #efece4; color: var(--el-text-color-primary); }
@@ -157,13 +159,27 @@ html.dark .mask { background: rgba(10, 12, 11, .6); }
   .hamburger { display: grid; }
 }
 @media (max-width: 640px) {
-  .main { padding: 14px; }
-  .top { flex-wrap: wrap; height: auto; min-height: 56px; padding: 10px 14px; row-gap: 8px; }
+  .main { padding: 12px; }
+  body { font-size: 15px; }
+  .top { flex-wrap: nowrap; height: 58px; padding: 0 10px; gap: 8px; }
   .top .today { display: none; }
+  .top-export .export-label { display: none; }
+  .top-export { padding: 0 11px !important; }
   .page-title { font-size: 18px; }
-  .stat-card { padding: 16px 10px; }
+  .page-desc { font-size: 14px; }
+  .stat-card { padding: 16px 8px; }
   .stat-card .v { font-size: 24px; }
-  .week-panel { gap: 14px; }
+  .week-panel { gap: 12px; }
+  /* 表单字体 ≥16px，避免 iOS 聚焦自动缩放 */
+  .el-input__inner, .el-textarea__inner, .el-select__wrapper { font-size: 16px !important; }
+  /* 筛选控件堆叠全宽 */
+  .filters { flex-direction: column; }
+  .filters .el-input, .filters .el-select { width: 100% !important; }
+  /* 表格横向滚动不截断 */
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .table-wrap .el-table { min-width: 680px; }
+  /* 手机端小字号适当放大 */
+  .ov-item .m, .notes-row .m, .diary-attr { font-size: 13px; }
   .el-dialog { width: auto !important; max-width: 94vw !important; margin-top: 6vh !important; }
   .el-dialog .el-dialog__body { padding: 16px 14px; }
   .el-dialog .el-dialog__title { font-size: 16px; }

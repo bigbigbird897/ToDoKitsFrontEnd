@@ -36,12 +36,12 @@
 
     <el-card shadow="never" class="mb" style="margin-top:14px">
       <template #header>类别明细（{{ store.rangeLabel }}）</template>
-      <el-table :data="store.catRows" size="small" style="width:100%">
+      <div class="table-wrap"><el-table :data="store.catRows" size="small" style="width:100%">
         <el-table-column label="类别" width="160"><template #default="{ row }"><span class="cat-cell"><i class="cat-dot" :style="{ background: catColor(row.name) }"></i>{{ row.name }}</span></template></el-table-column>
         <el-table-column label="完成数量" width="140"><template #default="{ row }">{{ row.count }} 项</template></el-table-column>
         <el-table-column label="占比" width="140"><template #default="{ row }">{{ row.pct }}%</template></el-table-column>
         <el-table-column label="代表事项"><template #default="{ row }">{{ row.sample }}</template></el-table-column>
-      </el-table>
+      </el-table></div>
       <el-empty v-if="!store.catRows.length" description="该范围内还没有完成的事项" :image-size="60"></el-empty>
     </el-card>
   </div>

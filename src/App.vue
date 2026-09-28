@@ -2,10 +2,7 @@
   <el-container class="layout">
     <div class="mask" :class="{ show: store.menuOpen }" @click="store.menuOpen = false"></div>
     <el-aside width="220px" class="side" :class="{ open: store.menuOpen }">
-      <div class="brand">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5" /></svg>
-        <span>生活助手</span>
-      </div>
+      <div class="side-pad"></div>
       <el-menu class="menu" :default-active="route.path" router>
         <el-menu-item v-for="m in menus" :key="m.path" :index="m.path">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -27,7 +24,10 @@
         <button class="icon-btn" @click="store.toggleTheme" :title="store.dark ? '切换到浅色' : '切换到深色'" aria-label="切换主题">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg>
         </button>
-        <el-button @click="store.exportAll">导出全部数据</el-button>
+        <el-button class="top-export" @click="store.exportAll">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          <span class="export-label">导出全部数据</span>
+        </el-button>
       </el-header>
       <el-main class="main">
         <router-view v-slot="{ Component }">

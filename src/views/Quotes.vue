@@ -8,7 +8,7 @@
       <div><el-button @click="store.exportModule('quote')">导出</el-button><el-button type="primary" @click="openAdd()">记一句话</el-button></div>
     </div>
 
-    <div class="mb" style="display:flex;gap:10px;flex-wrap:wrap">
+    <div class="mb filters">
       <el-input v-model="q" placeholder="搜索内容或作者…" clearable style="width:260px"></el-input>
       <el-select v-model="tag" placeholder="全部标签" clearable style="width:150px">
         <el-option v-for="t in store.quoteTags" :key="t" :label="t" :value="t"></el-option>

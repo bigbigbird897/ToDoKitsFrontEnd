@@ -11,7 +11,7 @@
       </div>
     </div>
 
-    <div class="mb" style="display:flex;gap:10px;flex-wrap:wrap">
+    <div class="mb filters">
       <el-input v-model="q" placeholder="搜索事项名称…" clearable style="width:220px"></el-input>
       <el-select v-model="cat" placeholder="全部类别" clearable style="width:150px">
         <el-option v-for="c in store.todoCats" :key="c" :label="c" :value="c"></el-option>
@@ -25,7 +25,7 @@
 
     <el-card shadow="never" class="mb">
       <template #header>全部待办（{{ filtered.length }}）</template>
-      <el-table :data="filtered" size="small" style="width:100%">
+      <div class="table-wrap"><el-table :data="filtered" size="small" style="width:100%">
         <el-table-column label="完成" width="60">
           <template #default="{ row }">
             <el-checkbox :model-value="row.status === 'done'" @change="store.toggleTodo(row.id)"></el-checkbox>
@@ -50,7 +50,7 @@
             <el-button link type="danger" @click="store.deleteTodo(row.id)">删除</el-button>
           </template>
         </el-table-column>
-      </el-table>
+        </el-table></div>
       <el-empty v-if="!filtered.length" description="没有符合条件的待办" :image-size="60"></el-empty>
     </el-card>
 
