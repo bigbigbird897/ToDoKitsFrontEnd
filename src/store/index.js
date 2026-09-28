@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ElMessage } from 'element-plus'
-import { api } from '../api'
+import { api, getToken, setToken, clearToken } from '../api'
 
 // ===== 数据格式工具 =====
 const fmt = (d) => {
@@ -29,6 +29,9 @@ export const useStore = defineStore('app', {
     notes: [],
     diaries: [],
     loaded: false,
+    // 认证（登录后写入 localStorage）
+    token: getToken() || '',
+    user: (() => { try { return JSON.parse(localStorage.getItem('lk_user') || 'null') } catch { return null } })(),
     // 界面
     dark: false,
     menuOpen: false,
@@ -69,6 +72,39 @@ export const useStore = defineStore('app', {
       if (t.status === 'done' || !t.due) return 0
       const d = diffDays(t.due, TODAY)
       return d < 0 ? -d : 0
+    },
+
+    // ---- 认证 ----
+    async login({ username, password }) {
+      try {
+        const r = await api.login({ username, password })
+        setToken(r.token); this.token = r.token; this.user = r.user
+        localStorage.setItem('lk_user', JSON.stringify(r.user))
+        ElMessage.success(`欢迎回来，${r.user.username}`)
+        await this.init()
+        return true
+      } catch (e) { ElMessage.error((e && e.message) || '登录失败'); return false }
+    },
+    async register({ username, password }) {
+      try {
+        const r = await api.register({ username, password })
+        setToken(r.token); this.token = r.token; this.user = r.user
+        localStorage.setItem('lk_user', JSON.stringify(r.user))
+        ElMessage.success('注册成功，欢迎使用')
+        await this.init()
+        return true
+      } catch (e) { ElMessage.error((e && e.message) || '注册失败'); return false }
+    },
+    logout() {
+      clearToken(); localStorage.removeItem('lk_user')
+      this.token = ''; this.user = null
+      this.resetData()
+      window.location.hash = '#/login'
+    },
+    resetData() {
+      this.todoCats = []; this.todos = []; this.habitCats = []; this.habits = []
+      this.quoteTags = []; this.quotes = []; this.folders = []; this.notes = []; this.diaries = []
+      this.loaded = false
     },
 
     // ---- 启动：从后端数据库加载全部数据 ----

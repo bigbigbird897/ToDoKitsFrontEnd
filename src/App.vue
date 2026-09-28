@@ -1,5 +1,6 @@
 <template>
-  <el-container class="layout">
+  <router-view v-if="!store.token" />
+  <el-container v-else class="layout">
     <div class="mask" :class="{ show: store.menuOpen }" @click="store.menuOpen = false"></div>
     <el-aside width="220px" class="side" :class="{ open: store.menuOpen }">
       <div class="side-pad"></div>
@@ -28,6 +29,8 @@
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
           <span class="export-label">导出全部数据</span>
         </el-button>
+        <span class="who" v-if="store.user" :title="store.user.username">{{ store.user.username }}</span>
+        <el-button class="logout-btn" size="small" @click="store.logout">退出</el-button>
       </el-header>
       <el-main class="main">
         <router-view v-slot="{ Component }">
@@ -41,11 +44,11 @@
 <script setup>
 import { useRoute } from 'vue-router'
 import { useStore } from './store'
-import { ref, onMounted } from 'vue'
+import { onMounted } from 'vue'
 const route = useRoute()
 const store = useStore()
 const today = new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-')
-onMounted(() => { store.init() })
+onMounted(() => { if (store.token) store.init() })
 const menus = [
   { path: '/', label: '工作台', icon: 'M4 13h6V4H4zM14 20h6V11h-6zM4 20h6v-4H4zM14 9h6V4h-6z' },
   { path: '/todos', label: '待办事项', icon: 'M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11' },

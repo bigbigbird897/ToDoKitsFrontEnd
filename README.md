@@ -48,3 +48,4 @@ npm run build      # 产出 dist/
 - 2026-09-28：前后端接线——`USE_BACKEND=true`，store 启动 `init()` 从数据库加载全部模块，所有增删改查改走后端接口（待办/习惯/名言/读后感/日记/分类），经 vite 代理 `/api`→5000；端到端实测从 PostgreSQL 加载数据渲染通过。
 - 2026-09-28：修复 `type=primary plain`（浅色）按钮文字不可见——主题对 `.el-button--primary` 的实心绿背景覆盖了 Element Plus 的 plain 浅色背景，造成绿字绿底；改为实心绿只作用于非 plain 按钮，plain 按钮用浅绿底+深绿字。
 - 2026-09-28：修复手机端电子日记页两栏并排——`Diary.vue` 容器内联 `grid-template-columns:260px 1fr` 覆盖了 ≤900px 断点的单列堆叠；改为直接使用 `.reading` 类（桌面 230px+1fr，移动单列）。
+- 2026-09-28：新增登录/注册——`Login.vue` + 路由守卫（无 token 一律跳 `/login`）；请求统一带 `Authorization: Bearer <token>`，401 自动清 token 回登录页；store 增加 `auth` 状态与 `login/register/logout`，数据按当前账号从后端加载；顶栏显示登录用户名与「退出」。端到端实测：登录→加载本账号数据→退出 通过。

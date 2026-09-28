@@ -190,3 +190,8 @@ html.dark .mask { background: rgba(10, 12, 11, .6); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .001s !important; transition-duration: .001s !important; }
 }
+
+/* 顶栏：当前登录用户名 + 退出 */
+.top .who { font-size: 13px; color: var(--el-color-primary-dark-2); font-weight: 600; margin-right: 6px; white-space: nowrap; max-width: 110px; overflow: hidden; text-overflow: ellipsis; }
+.top .logout-btn { margin-left: 4px; }
+html.dark .top .who { color: #8db8a9; }

@@ -1,4 +1,5 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
+import Login from '../views/Login.vue'
 import Overview from '../views/Overview.vue'
 import Todos from '../views/Todos.vue'
 import Stats from '../views/Stats.vue'
@@ -8,6 +9,7 @@ import Habits from '../views/Habits.vue'
 import Diary from '../views/Diary.vue'
 
 const routes = [
+  { path: '/login', name: 'login', component: Login, meta: { title: '登录' } },
   { path: '/', name: 'overview', component: Overview, meta: { title: '工作台' } },
   { path: '/todos', name: 'todos', component: Todos, meta: { title: '待办事项' } },
   { path: '/stats', name: 'stats', component: Stats, meta: { title: '数据统计' } },
@@ -20,6 +22,15 @@ const routes = [
 const router = createRouter({
   history: createWebHashHistory(),
   routes
+})
+
+// 全局守卫：未登录一律去登录页；已登录不能停留在登录页
+router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem('lk_token')
+  if (to.path === '/login') {
+    return token ? next('/') : next()
+  }
+  return token ? next() : next('/login')
 })
 
 export default router
