@@ -7,14 +7,14 @@
       </div>
       <div>
         <RangeExport kind="todo" />
-        <el-button @click="manageCat = true">管理分类</el-button>
+        <el-button style="margin-left:12px" @click="manageCat = true">管理分类</el-button>
         <el-button type="primary" @click="openAdd()">新增待办</el-button>
       </div>
     </div>
 
     <el-tabs v-model="activeTab" class="mb">
       <el-tab-pane label="全部待办" name="all">
-        <div class="filters">
+        <div class="filters" style="margin-bottom:16px">
           <el-input v-model="q" placeholder="搜索事项名称…" clearable style="width:220px"></el-input>
           <el-select v-model="cat" placeholder="全部类别" clearable style="width:150px">
             <el-option v-for="c in store.todoCats" :key="c" :label="c" :value="c"></el-option>
