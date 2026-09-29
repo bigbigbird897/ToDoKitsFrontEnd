@@ -69,9 +69,13 @@ export const useStore = defineStore('app', {
   },
   actions: {
     overdueDays(t) {
-      if (t.status === 'done' || !t.due) return 0
-      const d = diffDays(t.due, TODAY)
-      return d < 0 ? -d : 0
+      // 没设置预计完成时间 → 不算超期
+      if (!t.due) return 0
+      // “实际日期”：已完成用实际完成日，未完成用今天
+      const actual = t.status === 'done' ? (t.completedAt || TODAY) : TODAY
+      // 超期天数 = 实际日期 − 预计完成日期；只有实际晚于预期才计为正数（提前完成计 0）
+      const d = diffDays(t.due, actual)
+      return d > 0 ? d : 0
     },
 
     // ---- 认证 ----
