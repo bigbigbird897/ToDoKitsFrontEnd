@@ -4,7 +4,7 @@
     <span class="export-label" style="margin-left:6px">{{ text }}</span>
   </el-button>
 
-  <el-dialog v-model="show" :title="'按时间段导出' + title" width="460px">
+  <el-dialog v-model="show" :title="'按时间段导出' + title" width="460px" append-to-body>
     <div class="ex-presets">
       <el-radio-group v-model="preset" size="small">
         <el-radio-button value="today">今天</el-radio-button>
