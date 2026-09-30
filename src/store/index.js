@@ -38,7 +38,8 @@ export const useStore = defineStore('app', {
     user: (() => { try { return JSON.parse(localStorage.getItem('lk_user') || 'null') } catch { return null } })(),
     // 界面
     dark: savedDark,
-    menuOpen: false,
+    // 侧栏折叠状态：桌面端默认展开、移动端默认收起（由汉堡按钮切换）
+    menuOpen: window.innerWidth > 900,
     statsPreset: 'week',
     statsRange: [fmt(addDays(new Date(), -6)), TODAY]
   }),
