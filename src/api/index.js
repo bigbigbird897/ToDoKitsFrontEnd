@@ -1,9 +1,12 @@
 // ===== 后端 REST 客户端 =====
 // USE_BACKEND=true：所有数据通过后端 API（PostgreSQL + SqlSugar）存取。
 // 登录后所有请求带 Authorization: Bearer <token>，按当前账号隔离数据。
-// 开发时走 vite proxy /api → http://localhost:5000；后端托管 dist 时同源。
+// 接口前缀：
+//   - 开发（vite dev）：走 vite proxy `/api` → 后端，BASE = /api
+//   - 打包生产（nginx /todokits/ 子路径）：BASE = /todokits/api，由 nginx 代理到后端 /api
+//   - 也可用构建时 VITE_API_BASE 环境变量覆盖前缀（仅当部署到其它子路径时）
 export const USE_BACKEND = true
-const BASE = (import.meta.env.VITE_API_BASE || '') + '/api'
+const BASE = (import.meta.env.VITE_API_BASE || (import.meta.env.DEV ? '' : '/todokits')) + '/api'
 
 const TOKEN_KEY = 'lk_token'
 export const getToken = () => localStorage.getItem(TOKEN_KEY)
