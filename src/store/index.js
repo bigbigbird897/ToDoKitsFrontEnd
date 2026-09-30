@@ -13,6 +13,10 @@ const WEEK = ['日', '一', '二', '三', '四', '五', '六']
 const weekdayCN = (d) => `星期${WEEK[new Date(d).getDay()]}`
 const TODAY = fmt(new Date())
 
+// 主题持久化：启动时读取本地偏好并立即应用到 <html>，否则刷新页面后会回到浅色主题
+const savedDark = localStorage.getItem('lk-theme') === 'dark'
+document.documentElement.classList.toggle('dark', savedDark)
+
 // 后端名言 tags 是逗号分隔字符串，前端统一为数组
 const quoteTags = (q) => (q.tags ? String(q.tags).split(',').filter(Boolean) : [])
 
@@ -33,7 +37,7 @@ export const useStore = defineStore('app', {
     token: getToken() || '',
     user: (() => { try { return JSON.parse(localStorage.getItem('lk_user') || 'null') } catch { return null } })(),
     // 界面
-    dark: false,
+    dark: savedDark,
     menuOpen: false,
     statsPreset: 'week',
     statsRange: [fmt(addDays(new Date(), -6)), TODAY]

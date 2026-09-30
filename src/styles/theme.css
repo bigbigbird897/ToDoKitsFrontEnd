@@ -148,6 +148,9 @@ html.dark .menu .el-menu-item.is-active { background: rgba(46, 125, 107, .28); c
 html.dark .tree-node.active { background: rgba(46, 125, 107, .28); color: #8db8a9; }
 html.dark .stat-card .v { color: #5f9e8c; }
 html.dark .el-button:not(.el-button--primary) { background: #2a2e2b; color: #e8e6e0; }
+html.dark .icon-btn { background: #2a2e2b; border-color: #3a3f3b; color: #e8e6e0; }
+html.dark .icon-btn:hover { background: #333836; border-color: #444a45; }
+html.dark .icon-btn:active { background: #242826; }
 html.dark .el-input__wrapper, html.dark .el-textarea__inner, html.dark .el-select__wrapper { background: #2a2e2b; box-shadow: 0 0 0 1px #3a3f3b inset; }
 html.dark .el-input__wrapper.is-focus, html.dark .el-textarea__inner:focus { box-shadow: 0 0 0 1px var(--el-color-primary) inset, 0 0 0 3px rgba(46, 125, 107, .18); }
 html.dark .ov-item, html.dark .notes-row { border-bottom-color: #2e3230; }
