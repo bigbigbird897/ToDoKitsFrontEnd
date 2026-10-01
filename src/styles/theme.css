@@ -156,6 +156,11 @@ html.dark .el-input__wrapper, html.dark .el-textarea__inner, html.dark .el-selec
 html.dark .el-input__wrapper.is-focus, html.dark .el-textarea__inner:focus { box-shadow: 0 0 0 1px var(--el-color-primary) inset, 0 0 0 3px rgba(46, 125, 107, .18); }
 html.dark .ov-item, html.dark .notes-row { border-bottom-color: #2e3230; }
 html.dark .mask { background: rgba(10, 12, 11, .6); }
+/* 登录页暗色：卡片/背景/文字与深色主题一致 */
+html.dark .login-page { background: #171a18; }
+html.dark .login-card { background: #202422; color: #e8e6e0; border: 1px solid #2e3230; box-shadow: 0 4px 16px rgba(0, 0, 0, .45); }
+html.dark .login-brand .logo { color: #f0eee7; }
+html.dark .login-sub, html.dark .login-switch { color: #c7c4bb; }
 
 /* 桌面端（>900px）：汉堡按钮常显，侧栏可折叠（收起时宽度收缩为 0，无遮罩） */
 @media (min-width: 901px) {

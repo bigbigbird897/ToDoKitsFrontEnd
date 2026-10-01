@@ -103,7 +103,7 @@
         <el-form-item label="预计完成"><el-date-picker v-model="form.due" type="date" value-format="YYYY-MM-DD" style="width:100%"></el-date-picker></el-form-item>
         <el-form-item label="周期重复">
           <el-select v-model="form.repeat" style="width:100%">
-            <el-option label="不重复" value=""></el-option>
+            <el-option label="不重复" value="none"></el-option>
             <el-option label="每天" value="daily"></el-option>
             <el-option label="每周" value="weekly"></el-option>
             <el-option label="每月" value="monthly"></el-option>
@@ -142,7 +142,7 @@ const activeTab = ref('all')
 const q = ref(''); const cat = ref(''); const status = ref('')
 const manageCat = ref(false); const newCat = ref('')
 const dlg = reactive({ show: false, editing: false })
-const emptyForm = () => ({ id: 0, name: '', cat: '工作', start: today, due: today, status: 'doing', repeat: '', note: '', completedAt: '' })
+const emptyForm = () => ({ id: 0, name: '', cat: '工作', start: today, due: today, status: 'doing', repeat: 'none', note: '', completedAt: '' })
 const form = reactive(emptyForm())
 const CAT_COLORS = ['#2E7D6B', '#3F8A5C', '#C97B4A', '#3F7DB0', '#C75C5C', '#7A5FA0', '#A06A3C', '#5E8C9E', '#6E9B6E', '#B0605A']
 const catColor = (c) => CAT_COLORS[store.todoCats.indexOf(c) % CAT_COLORS.length]
@@ -167,11 +167,13 @@ const weekTodos = computed(() => store.todos.filter(t => t.start >= weekStart))
 const monthTodos = computed(() => store.todos.filter(t => t.start >= monthStart))
 const yearTodos = computed(() => store.todos.filter(t => t.start >= yearStart))
 function openAdd() { Object.assign(form, emptyForm()); dlg.editing = false; dlg.show = true }
-function openEdit(t) { Object.assign(form, { ...t }); dlg.editing = true; dlg.show = true }
+function openEdit(t) { Object.assign(form, { ...t, repeat: t.repeat || 'none' }); dlg.editing = true; dlg.show = true }
 function save() {
   if (!form.name.trim()) return
-  if (dlg.editing) store.updateTodo({ ...form })
-  else store.addTodo({ ...form })
+  // 「不重复」在下拉里用占位值 none 表示，保存时转回空字符串（后端不重复约定）
+  const payload = { ...form, repeat: form.repeat === 'none' ? '' : form.repeat }
+  if (dlg.editing) store.updateTodo(payload)
+  else store.addTodo(payload)
   dlg.show = false
 }
 function addCat() { const c = newCat.value.trim(); if (c) { store.addTodoCat(c); newCat.value = '' } }
