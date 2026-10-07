@@ -57,3 +57,4 @@ npm run build      # 产出 dist/
 - 2026-10-01：修复打包后访问不到后端接口——API 前缀按环境区分：开发（vite dev）走 `/api` 代理；打包生产用 `/todokits/api`（nginx 子路径 `^~ /todokits/api/` 代理到后端 `/api`），并保留 `VITE_API_BASE` 环境变量覆盖。配套 `vite.config.js` 已设 `base: '/todokits/'`（静态资源子路径）、路由用 hash 模式。构建产物实测包含 `/todokits/api` 前缀。
 - 2026-10-02：待办「周期重复」下拉默认不再显示空白——Element Plus 的 `el-select` 会把空字符串 `value=""` 当作"未选中"显示占位；将「不重复」改为占位值 `none`（新建/编辑时默认选中），保存时转回空字符串（后端不重复约定），表格"周期"列仍显示 `—`。
 - 2026-10-02：登录页暗色主题适配——`.login-card` 原硬编码 `#fff`、`.login-page` 用浅色变量，暗色下未覆盖；`theme.css` 增加 `html.dark` 对登录页背景/卡片/文字（logo、说明、切换区）的深色覆盖。
+- 2026-10-07：日记/读后感组件优化——①电子日记新增按正文内容搜索（header 搜索框过滤列表，无结果显示"没有匹配的日记"）；②日记侧边列表与读后感左侧文件夹列表加滚动条（`max-height` + `overflow-y:auto`）；③日记编辑区支持按 Tab 插入 4 空格缩进（拦截默认跳焦点）；④修复创建读后感文件夹"提示失败但成功"——后端创建成功返回 200 空 body，`res.json()` 抛 `Unexpected end of JSON input`，api 客户端改为先取文本、空则返回 null。

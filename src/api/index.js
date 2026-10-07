@@ -42,7 +42,10 @@ async function request(method, path, body) {
     throw new Error(msg || `HTTP ${res.status}`)
   }
   if (res.status === 204) return null
-  return res.json()
+  // 部分接口（如创建文件夹）返回 200 但 body 为空，直接 res.json() 会抛
+  // "Unexpected end of JSON input"；先取文本，空则返回 null
+  const text = await res.text()
+  return text ? JSON.parse(text) : null
 }
 
 export const api = {

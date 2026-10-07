@@ -19,7 +19,7 @@
             <el-button size="small" type="primary" plain @click="folderDlg = true">新建文件夹</el-button>
           </div>
         </template>
-        <div>
+        <div style="max-height:520px;overflow-y:auto;padding-right:4px">
           <div v-for="f in store.folders" :key="f" class="tree-node" :class="{ active: f === current }" @click="current = f">
             <span style="display:inline-flex;align-items:center;gap:6px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>{{ f }}（{{ countIn(f) }}）</span>
             <el-button link type="danger" size="small" @click.stop="store.delFolder(f)">删</el-button>

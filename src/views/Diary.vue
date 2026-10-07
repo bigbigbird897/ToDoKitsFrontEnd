@@ -10,11 +10,18 @@
 
     <div class="reading">
       <el-card shadow="never">
-        <template #header>日记列表</template>
-        <div v-for="d in store.diaries" :key="d.id" class="notes-row" :class="{ active: current === d.id }" @click="current = d.id; fill(d)">
-          <div class="meta"><div class="n">{{ d.date }} {{ d.weekday }}</div><div class="m">{{ d.location }} · {{ d.weather }}</div></div>
+        <template #header>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+            <span>日记列表</span>
+            <el-input v-model="q" placeholder="搜索日记内容…" clearable size="small" style="width:180px"></el-input>
+          </div>
+        </template>
+        <div style="max-height:480px;overflow-y:auto;padding-right:4px">
+          <div v-for="d in filteredDiaries" :key="d.id" class="notes-row" :class="{ active: current === d.id }" @click="current = d.id; fill(d)">
+            <div class="meta"><div class="n">{{ d.date }} {{ d.weekday }}</div><div class="m">{{ d.location }} · {{ d.weather }}</div></div>
+          </div>
         </div>
-        <el-empty v-if="!store.diaries.length" description="还没有日记" :image-size="50"></el-empty>
+        <el-empty v-if="!filteredDiaries.length" :description="q ? '没有匹配的日记' : '还没有日记'" :image-size="50"></el-empty>
       </el-card>
 
       <el-card shadow="never" class="diary-editor">
@@ -31,7 +38,7 @@
           </div>
         </template>
         <div class="diary-attr" style="margin-bottom:8px">{{ form.date }} · {{ form.weekday }} · {{ form.location }} · {{ form.weather }}</div>
-        <el-input v-model="form.text" type="textarea" :rows="10" placeholder="今天的感悟…"></el-input>
+        <el-input v-model="form.text" type="textarea" :rows="10" placeholder="今天的感悟…" @keydown.tab.prevent="onTabKey"></el-input>
         <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
           <el-button @click="store.deleteDiary(form.id)" :disabled="!form.id">删除</el-button>
           <el-button type="primary" @click="save">保存日记</el-button>
@@ -42,7 +49,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import RangeExport from '../components/RangeExport.vue'
 import { useStore } from '../store'
 const store = useStore()
@@ -51,6 +58,17 @@ const weathers = ['晴', '多云', '阴', '小雨', '大雨', '雪', '风', '雾
 const current = ref(null)
 const empty = () => { const today = new Date().toISOString().slice(0, 10); return { id: 0, date: today, weekday: '星期' + '日一二三四五六'[new Date().getDay()], location: '', weather: '晴', text: '' } }
 const form = reactive(empty())
+// 日记搜索：按正文内容过滤
+const q = ref('')
+const filteredDiaries = computed(() => q.value ? store.diaries.filter(d => (d.text || '').includes(q.value)) : store.diaries)
+// 编辑区按 Tab 插入 4 空格缩进（默认 Tab 会跳出文本框）
+function onTabKey(e) {
+  const ta = e.target
+  const start = ta.selectionStart, end = ta.selectionEnd
+  const next = form.text.slice(0, start) + '    ' + form.text.slice(end)
+  form.text = next
+  requestAnimationFrame(() => { ta.selectionStart = ta.selectionEnd = start + 4 })
+}
 function openAdd() { Object.assign(form, empty()); current.value = null }
 function fill(d) { Object.assign(form, { ...d }) }
 function save() {
