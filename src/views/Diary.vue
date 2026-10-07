@@ -12,15 +12,15 @@
       <el-card shadow="never">
         <template #header>
           <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-            <span>日记列表</span>
-            <el-input v-model="q" placeholder="搜索日记内容…" clearable size="small" style="width:180px"></el-input>
+            <span style="flex-shrink:0;white-space:nowrap">日记列表</span>
+            <el-input v-model="q" placeholder="搜索日记内容…" clearable size="small" style="flex:1;min-width:130px"></el-input>
           </div>
         </template>
-        <div style="max-height:480px;overflow-y:auto;padding-right:4px">
+        <el-scrollbar height="460px" always>
           <div v-for="d in filteredDiaries" :key="d.id" class="notes-row" :class="{ active: current === d.id }" @click="current = d.id; fill(d)">
             <div class="meta"><div class="n">{{ d.date }} {{ d.weekday }}</div><div class="m">{{ d.location }} · {{ d.weather }}</div></div>
           </div>
-        </div>
+        </el-scrollbar>
         <el-empty v-if="!filteredDiaries.length" :description="q ? '没有匹配的日记' : '还没有日记'" :image-size="50"></el-empty>
       </el-card>
 
