@@ -20,11 +20,11 @@
       </el-form>
 
       <div class="login-switch">
-        <span>{{ mode === 'login' ? '还没有账号？' : '已有账号？' }}</span>
+        <!-- <span>{{ mode === 'login' ? '还没有账号？' : '已有账号？' }}</span> -->
         
-        <!-- <el-button link type="primary" @click="mode = mode === 'login' ? 'register' : 'login'">
+        <el-button link type="primary" @click="mode = mode === 'login' ? 'register' : 'login'">
           {{ mode === 'login' ? '去注册' : '去登录' }}
-        </el-button> -->
+        </el-button>
        
         <div>
           请通过邮箱联系:dfxsd@foxmail.com

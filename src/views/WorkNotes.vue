@@ -68,7 +68,7 @@
 
           <div class="sec-title">文件</div>
           <div v-for="fl in visibleFiles" :key="fl.id" class="item-row" @click="openPreview(fl)">
-            <span class="type-badge" :class="fl.type">{{ fl.type.toUpperCase() }}</span>
+            <span class="type-badge" :class="isMarkdown(fl) ? 'md' : 'txt'">{{ (isMarkdown(fl) ? 'md' : fl.type).toUpperCase() }}</span>
             <span class="item-name">{{ fl.name }}</span>
             <span class="item-meta">{{ fl.updatedAt }}</span>
             <span class="item-ops" @click.stop>
@@ -93,7 +93,7 @@
             </div>
           </div>
           <div class="content-meta">{{ contentFile.type.toUpperCase() }} · {{ contentFile.updatedAt }}</div>
-          <div v-if="contentFile.type === 'md'" class="content-body md" v-html="renderMd(contentFile.content || '')"></div>
+          <div v-if="isMarkdown(contentFile)" class="content-body md" v-html="renderMd(contentFile.content || '')"></div>
           <pre v-else class="content-body txt">{{ contentFile.content || '' }}</pre>
         </template>
 
@@ -335,6 +335,8 @@ function inline(s) {
     .replace(/\*([^*]+)\*/g, '<em>$1</em>')
     .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
 }
+// 判断是否按 Markdown 渲染：type 为 md，或文件名以 .md 结尾（兼容历史 type 存成 txt 的记录）
+function isMarkdown(f) { return !!f && (f.type === 'md' || /\.md$/i.test(f.name || '')) }
 function renderMd(t) {
   const lines = (t || '').split('\n')
   let html = '', codeBuf = [], inCode = false, inList = false
