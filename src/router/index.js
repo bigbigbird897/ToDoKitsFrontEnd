@@ -7,6 +7,7 @@ import Quotes from '../views/Quotes.vue'
 import Reading from '../views/Reading.vue'
 import Habits from '../views/Habits.vue'
 import Diary from '../views/Diary.vue'
+import WorkNotes from '../views/WorkNotes.vue'
 
 const routes = [
   { path: '/login', name: 'login', component: Login, meta: { title: '登录' } },
@@ -16,7 +17,8 @@ const routes = [
   { path: '/quotes', name: 'quotes', component: Quotes, meta: { title: '名言警句' } },
   { path: '/reading', name: 'reading', component: Reading, meta: { title: '读后感' } },
   { path: '/habits', name: 'habits', component: Habits, meta: { title: '好习惯' } },
-  { path: '/diary', name: 'diary', component: Diary, meta: { title: '电子日记' } }
+  { path: '/diary', name: 'diary', component: Diary, meta: { title: '电子日记' } },
+  { path: '/worknotes', name: 'worknotes', component: WorkNotes, meta: { title: '工作笔记' } }
 ]
 
 const router = createRouter({

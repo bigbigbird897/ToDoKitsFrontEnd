@@ -32,6 +32,9 @@ export const useStore = defineStore('app', {
     folders: [],
     notes: [],
     diaries: [],
+    // 工作笔记：文件夹树（扁平列表按 ParentId 组装）+ 当前文件夹文件列表
+    workFolders: [],
+    workFiles: [],
     loaded: false,
     // 认证（登录后写入 localStorage）
     token: getToken() || '',
@@ -113,6 +116,7 @@ export const useStore = defineStore('app', {
     resetData() {
       this.todoCats = []; this.todos = []; this.habitCats = []; this.habits = []
       this.quoteTags = []; this.quotes = []; this.folders = []; this.notes = []; this.diaries = []
+      this.workFolders = []; this.workFiles = []
       this.loaded = false
     },
 
@@ -289,6 +293,48 @@ export const useStore = defineStore('app', {
     async deleteDiary(id) {
       try { await api.deleteDiary(id); this.diaries = this.diaries.filter(d => d.id !== id) }
       catch (e) { ElMessage.error('删除日记失败：' + (e && e.message ? e.message : e)) }
+    },
+
+    // ---- 工作笔记：文件夹树 + 文件 ----
+    async loadWorkFolders() { this.workFolders = (await api.getWorkFolders()) || [] },
+    async loadWorkFiles(folderId = 0) { this.workFiles = (await api.getWorkFiles(folderId)) || [] },
+    async addWorkFolder(name, parentId = null) {
+      const f = await api.addWorkFolder({ name, parentId })
+      this.workFolders.push(f)
+      return f
+    },
+    async renameWorkFolder(id, name) {
+      const f = await api.renameWorkFolder(id, { name })
+      this.workFolders = this.workFolders.map(x => x.id === id ? f : x)
+    },
+    async deleteWorkFolder(id) {
+      await api.deleteWorkFolder(id)
+      this.workFolders = this.workFolders.filter(x => x.id !== id)
+      this.workFiles = this.workFiles.filter(x => x.folderId !== id)
+    },
+    async addWorkFile(p) {
+      const f = await api.createWorkFile({ name: p.name, folderId: p.folderId || 0, type: p.type || 'txt', content: p.content || '' })
+      this.workFiles.push(f)
+      return f
+    },
+    async updateWorkFile(id, patch) {
+      const f = await api.updateWorkFile(id, patch)
+      this.workFiles = this.workFiles.map(x => x.id === id ? f : x)
+      return f
+    },
+    async deleteWorkFile(id) { await api.deleteWorkFile(id); this.workFiles = this.workFiles.filter(x => x.id !== id) },
+    async getWorkFile(id) { return await api.getWorkFile(id) },
+    async exportWorkNotes() {
+      const files = (await api.getWorkFilesAll()) || []
+      const fmap = {}
+      this.workFolders.forEach(f => fmap[f.id] = f)
+      const pathOf = (id, acc = []) => {
+        if (!id || !fmap[id]) return acc
+        acc.unshift(fmap[id].name)
+        return pathOf(fmap[id].parentId, acc)
+      }
+      const rows = [['所属文件夹', '文件名', '类型', '内容', '修改时间'], ...files.map(fl => [pathOf(fl.folderId).join('/') || '根目录', fl.name, fl.type, fl.content || '', fl.updatedAt])]
+      this.download(`工作笔记全部-${TODAY}.csv`, this.csv(rows))
     },
 
     // ---- 主题 ----

@@ -54,6 +54,7 @@ const menus = [
   { path: '/quotes', label: '名言警句', icon: 'M7 4v18M3 4h8M5 9h4M5 14h4M5 19h4M15 4h6M17 4v6c0 2-2 3-4 3' },
   { path: '/reading', label: '读后感', icon: 'M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 0 6.5 22H20V2H6.5A2.5 2.5 0 0 0 4 4.5z' },
   { path: '/habits', label: '好习惯', icon: 'M9 12l2 2 4-4M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z' },
-  { path: '/diary', label: '电子日记', icon: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M8 13h8M8 17h5' }
+  { path: '/diary', label: '电子日记', icon: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M8 13h8M8 17h5' },
+  { path: '/worknotes', label: '工作笔记', icon: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M8 13h8M8 17h5' }
 ]
 </script>

@@ -77,6 +77,17 @@ export const api = {
   createNote: (b) => request('POST', '/reading/notes', b),
   updateNote: (id, b) => request('PUT', `/reading/notes/${id}`, b),
   deleteNote: (id) => request('DELETE', `/reading/notes/${id}`),
+  // 工作笔记（文件夹树 + 文件 txt/md）
+  getWorkFolders: () => request('GET', '/worknotes/folders'),
+  addWorkFolder: (b) => request('POST', '/worknotes/folders', b),
+  renameWorkFolder: (id, b) => request('PUT', `/worknotes/folders/${id}/rename`, b),
+  deleteWorkFolder: (id) => request('DELETE', `/worknotes/folders/${id}`),
+  getWorkFiles: (folderId = 0) => request('GET', `/worknotes/files?folderId=${folderId}`),
+  getWorkFile: (id) => request('GET', `/worknotes/files/${id}`),
+  getWorkFilesAll: () => request('GET', '/worknotes/all-files'),
+  createWorkFile: (b) => request('POST', '/worknotes/files', b),
+  updateWorkFile: (id, b) => request('PUT', `/worknotes/files/${id}`, b),
+  deleteWorkFile: (id) => request('DELETE', `/worknotes/files/${id}`),
   // 日记
   getDiaries: () => request('GET', '/diaries'),
   createDiary: (b) => request('POST', '/diaries', b),
