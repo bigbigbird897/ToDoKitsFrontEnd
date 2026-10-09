@@ -148,6 +148,8 @@
 import { ref, computed, reactive, onMounted, nextTick } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useStore } from '../store'
+import { marked } from 'marked'
+marked.setOptions({ gfm: true, breaks: true })
 const store = useStore()
 
 // ===== 文件夹树 =====
@@ -326,39 +328,14 @@ async function exportAll() {
   catch (e) { ElMessage.error('导出失败：' + (e && e.message ? e.message : e)) }
 }
 
-// ===== 轻量 Markdown 渲染 =====
-function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') }
-function inline(s) {
-  return esc(s)
-    .replace(/`([^`]+)`/g, '<code>$1</code>')
-    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*([^*]+)\*/g, '<em>$1</em>')
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
-}
+// ===== Markdown 渲染（marked，GFM 支持表格/删除线/任务列表等）=====
 // 判断是否按 Markdown 渲染：type 为 md，或文件名以 .md 结尾（兼容历史 type 存成 txt 的记录）
 function isMarkdown(f) { return !!f && (f.type === 'md' || /\.md$/i.test(f.name || '')) }
 function renderMd(t) {
-  const lines = (t || '').split('\n')
-  let html = '', codeBuf = [], inCode = false, inList = false
-  const flushList = () => { if (inList) { html += '</ul>'; inList = false } }
-  for (const raw of lines) {
-    const line = raw.replace(/\r$/, '')
-    if (/^```/.test(line)) {
-      if (inCode) { html += '</pre></code>'; inCode = false }
-      else { flushList(); html += '<code><pre>'; inCode = true }
-      continue
-    }
-    if (inCode) { html += esc(line) + '\n'; continue }
-    const h = line.match(/^(#{1,3})\s+(.*)$/)
-    if (h) { flushList(); const lv = h[1].length; html += `<h${lv}>${inline(h[2])}</h${lv}>`; continue }
-    if (/^\s*[-*]\s+/.test(line)) { if (!inList) { html += '<ul>'; inList = true } html += `<li>${inline(line.replace(/^\s*[-*]\s+/, ''))}</li>`; continue }
-    if (/^\s*>\s?/.test(line)) { flushList(); html += `<blockquote>${inline(line.replace(/^\s*>\s?/, ''))}</blockquote>`; continue }
-    if (/^\s*$/.test(line)) { flushList(); continue }
-    flushList(); html += `<p>${inline(line)}</p>`
-  }
-  flushList()
-  return html
+  try { return marked.parse(t || '') } catch { return '<pre>' + escOld(t) + '</pre>' }
 }
+// 渲染异常时的兜底转义（正常情况下 marked 已处理）
+function escOld(s) { return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') }
 
 onMounted(async () => {
   try {
@@ -413,6 +390,17 @@ html.dark .content-body.md pre { background: #2a2e2b; border-color: #3a3f3b; }
 .content-body.md code { background: var(--el-fill-color-light); padding: 1px 5px; border-radius: 4px; font-family: Consolas, monospace; }
 html.dark .content-body.md code { background: #2a2e2b; }
 .content-body.md blockquote { border-left: 3px solid var(--el-color-primary-light-5); margin: .5em 0; padding: 2px 12px; color: var(--el-text-color-secondary); }
+.content-body.md h4, .content-body.md h5, .content-body.md h6 { margin: .5em 0 .2em; }
+.content-body.md ul, .content-body.md ol { padding-left: 1.6em; margin: .4em 0; }
+.content-body.md li { margin: .15em 0; }
+.content-body.md li > input[type=checkbox] { margin-right: 6px; vertical-align: middle; }
+.content-body.md table { border-collapse: collapse; margin: .6em 0; display: block; overflow-x: auto; max-width: 100%; }
+.content-body.md th, .content-body.md td { border: 1px solid var(--el-border-color); padding: 6px 12px; text-align: left; }
+.content-body.md th { background: var(--el-fill-color-light); font-weight: 600; }
+html.dark .content-body.md th, html.dark .content-body.md td { border-color: #3a3f3b; }
+.content-body.md a { color: var(--el-color-primary); text-decoration: none; }
+.content-body.md del { color: var(--el-text-color-secondary); }
+.content-body.md pre code { background: none; padding: 0; }
 .editor { width: 100%; flex: 1; }
 .editor :deep(textarea) { font-family: Consolas, "JetBrains Mono", monospace; font-size: 14px; line-height: 1.7; min-height: 520px; }
 .type-hint { font-size: 12px; color: var(--el-text-color-secondary); margin-top: 6px; }
