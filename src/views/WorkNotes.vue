@@ -11,6 +11,21 @@
       </div>
     </div>
 
+    <div class="content-search-bar">
+      <el-input
+        v-model="contentQuery"
+        placeholder="搜索文件内容（跨文件夹全文检索，输入后自动搜索）"
+        clearable
+        class="content-search"
+        @input="onContentSearch"
+        @keyup.enter="onContentSearch(true)"
+        @clear="exitSearch"
+      />
+      <span v-if="contentMode === 'search'" class="search-hint">
+        <el-button size="small" @click="exitSearch">返回列表</el-button>
+      </span>
+    </div>
+
     <div class="work">
       <!-- 左侧：文件夹树 -->
       <el-card shadow="never" class="left-card">
@@ -80,6 +95,25 @@
             </span>
           </div>
           <el-empty v-if="!childFolders.length && !visibleFiles.length" description="当前文件夹还没有内容" :image-size="60" />
+        </template>
+
+        <!-- 内容搜索态 -->
+        <template v-else-if="contentMode === 'search'">
+          <div class="card-head file-head">
+            <span class="file-title">「{{ contentQuery }}」的搜索结果（{{ contentResults.length }} 项）</span>
+          </div>
+          <div v-for="r in contentResults" :key="r.id" class="item-row" @click="openSearchResult(r)">
+            <span class="type-badge" :class="isMarkdown(r) ? 'md' : ''">{{ (isMarkdown(r) ? 'md' : r.type).toUpperCase() }}</span>
+            <span class="item-name">
+              <span class="r-name">{{ r.name }}</span>
+              <span class="r-path">{{ r.path }}</span>
+            </span>
+            <span class="r-snippet" v-html="highlight(r)"></span>
+            <span class="item-ops" @click.stop>
+              <el-button link size="small" @click="openSearchResult(r)">打开</el-button>
+            </span>
+          </div>
+          <el-empty v-if="!contentResults.length" description="未找到包含该内容的文件" :image-size="60" />
         </template>
 
         <!-- 查看态 -->
@@ -231,11 +265,45 @@ async function removeFolder(f) {
 }
 
 // ===== 文件操作 =====
-const contentMode = ref('list')    // 'list' | 'view' | 'edit'
+const contentMode = ref('list')    // 'list' | 'search' | 'view' | 'edit'
 const contentFile = ref(null)
 const editContent = ref('')
 const fileDlg = reactive({ show: false, title: '', mode: 'create', id: 0, name: '', type: 'txt' })
 const fileInput = ref(null)
+
+// ===== 内容全文检索 =====
+const contentQuery = ref('')
+const contentResults = ref([])
+let searchTimer = null
+
+function onContentSearch(force) {
+  clearTimeout(searchTimer)
+  const q = (contentQuery.value || '').trim()
+  if (!q) { exitSearch(); return }
+  if (force) { doSearch(q); return }
+  searchTimer = setTimeout(() => doSearch(q), 300)   // 防抖，避免频繁请求
+}
+async function doSearch(q) {
+  try {
+    const res = await store.searchWorkFiles(q)
+    contentResults.value = res
+    contentMode.value = 'search'
+  } catch (e) { ElMessage.error('搜索失败：' + (e && e.message ? e.message : e)) }
+}
+function exitSearch() {
+  contentQuery.value = ''
+  contentResults.value = []
+  if (contentMode.value === 'search') contentMode.value = 'list'
+}
+async function openSearchResult(r) {
+  // 跳到结果所在文件夹并直接打开查看
+  if (r.folderId !== undefined && curId.value !== r.folderId) {
+    curId.value = r.folderId || 0
+    await store.loadWorkFiles(curId.value).catch(() => {})
+  }
+  contentFile.value = r
+  contentMode.value = 'view'
+}
 
 function openCreateFile() { fileDlg.title = '新建文件'; fileDlg.mode = 'create'; fileDlg.id = 0; fileDlg.name = ''; fileDlg.type = 'txt'; fileDlg.show = true }
 function renameFile(fl) { fileDlg.title = '重命名文件'; fileDlg.mode = 'rename'; fileDlg.id = fl.id; fileDlg.name = fl.name; fileDlg.type = fl.type; fileDlg.show = true }
@@ -337,6 +405,25 @@ function renderMd(t) {
 // 渲染异常时的兜底转义（正常情况下 marked 已处理）
 function escOld(s) { return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') }
 
+// ===== 内容检索：命中片段 + 关键词高亮 =====
+function escHtml(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;') }
+function highlight(r) {
+  const kw = (contentQuery.value || '').trim().toLowerCase()
+  if (!kw) return ''
+  const t = r.content || ''
+  const low = t.toLowerCase()
+  const i = low.indexOf(kw)
+  let frag
+  if (i < 0) { frag = t.slice(0, 80) } else {
+    const len = 60
+    const s = Math.max(0, i - len), e = Math.min(t.length, i + kw.length + len)
+    frag = (s > 0 ? '…' : '') + t.slice(s, e) + (e < t.length ? '…' : '')
+  }
+  const esc = escHtml(frag)
+  const re = new RegExp('(' + kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'ig')
+  return esc.replace(re, '<mark>$1</mark>')
+}
+
 onMounted(async () => {
   try {
     await store.loadWorkFolders()
@@ -346,6 +433,9 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.content-search-bar { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; }
+.content-search { max-width: 420px; }
+.search-hint { font-size: 12px; color: var(--el-text-color-secondary); }
 .work { display: grid; grid-template-columns: 300px 1fr; gap: 16px; min-height: 440px; align-items: start; }
 .left-card { min-width: 0; }
 .right-card { min-width: 0; display: flex; flex-direction: column; min-height: 440px; }
@@ -371,6 +461,11 @@ html.dark .item-row { border-bottom-color: #2e3230; }
 html.dark .item-row:hover { background: rgba(46, 125, 107, .15); }
 .item-name { font-weight: 500; color: var(--el-text-color-primary); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .item-meta { font-size: 12px; color: var(--el-text-color-secondary); white-space: nowrap; }
+.r-name { display: block; font-weight: 600; }
+.r-path { font-size: 12px; color: var(--el-text-color-secondary); }
+.r-snippet { font-size: 12px; color: var(--el-text-color-secondary); flex: 1 1 55%; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.r-snippet mark { background: #ffe58f; color: #333; padding: 0 2px; border-radius: 2px; font-weight: 600; }
+html.dark .r-snippet mark { background: #6b5b2b; color: #ffe58f; }
 .item-ops { display: none; gap: 2px; }
 .item-row:hover .item-ops { display: inline-flex; }
 .type-badge { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 999px; background: var(--el-color-primary-light-9); color: var(--el-color-primary-dark-2); flex: none; letter-spacing: .5px; }

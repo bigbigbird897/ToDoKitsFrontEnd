@@ -324,6 +324,23 @@ export const useStore = defineStore('app', {
     },
     async deleteWorkFile(id) { await api.deleteWorkFile(id); this.workFiles = this.workFiles.filter(x => x.id !== id) },
     async getWorkFile(id) { return await api.getWorkFile(id) },
+    // 全文检索笔记文件：按关键词过滤「文件名 + 正文 content」，返回带所属路径的结果
+    async searchWorkFiles(keyword) {
+      const kw = (keyword || '').trim().toLowerCase()
+      if (!kw) return []
+      const files = (await api.getWorkFilesAll()) || []
+      const fmap = {}
+      this.workFolders.forEach(f => { fmap[f.id] = f })
+      const pathOf = (id, acc = []) => {
+        if (!id || !fmap[id]) return acc
+        acc.unshift(fmap[id].name)
+        return pathOf(fmap[id].parentId, acc)
+      }
+      const has = (s) => String(s || '').toLowerCase().includes(kw)
+      return files
+        .filter(f => has(f.name) || has(f.content))
+        .map(f => ({ ...f, path: pathOf(f.folderId).join(' / ') || '根目录' }))
+    },
     async exportWorkNotes() {
       const files = (await api.getWorkFilesAll()) || []
       const fmap = {}
