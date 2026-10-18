@@ -2,7 +2,7 @@
   <div>
     <div class="view-head mb">
       <div>
-        <div class="page-title">工作笔记</div>
+        <div class="page-title">笔记</div>
         <div class="page-desc">左侧管理文件夹，文件在所在文件夹内增删改查，支持 txt / md 在线查看与编辑。</div>
       </div>
       <div class="head-actions">
@@ -324,7 +324,7 @@ async function onPickFiles(e) {
 
 // ===== 导出全部 =====
 async function exportAll() {
-  try { await store.exportWorkNotes(); ElMessage.success('已导出全部工作笔记') }
+  try { await store.exportWorkNotes(); ElMessage.success('已导出全部笔记') }
   catch (e) { ElMessage.error('导出失败：' + (e && e.message ? e.message : e)) }
 }
 

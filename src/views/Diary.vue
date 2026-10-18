@@ -2,7 +2,7 @@
   <div>
     <div class="view-head mb">
       <div>
-        <div class="page-title">电子日记</div>
+        <div class="page-title">日记</div>
         <div class="page-desc">每天写一点感悟，记录星期几、地点与天气。</div>
       </div>
       <div><RangeExport kind="diary" /><el-button type="primary" style="margin-left:12px" @click="openAdd()">写日记</el-button></div>

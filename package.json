@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "生活助手（LifeKit）前端：待办 / 统计 / 名言 / 读后感 / 好习惯 / 电子日记",
+  "description": "生活助手（LifeKit）前端：待办 / 统计 / 名言 / 读后感 / 好习惯 / 日记",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
