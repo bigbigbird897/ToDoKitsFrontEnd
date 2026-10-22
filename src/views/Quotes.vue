@@ -16,7 +16,7 @@
     </div>
 
     <div v-for="qu in filtered" :key="qu.id" class="quote">
-      <div class="txt">“{{ qu.text }}”</div>
+      <div class="txt" style="white-space:pre-wrap">“{{ qu.text }}”</div>
       <div class="who" style="display:flex;justify-content:space-between;align-items:center">
         <span>{{ qu.who }}{{ qu.src ? ' · 《' + qu.src + '》' : '' }}</span>
         <span style="display:flex;gap:8px">
