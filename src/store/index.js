@@ -157,6 +157,7 @@ export const useStore = defineStore('app', {
         const input = { name: todo.name, cat: todo.cat, start: todo.start, due: todo.due, status: todo.status, repeat: todo.repeat || '', note: todo.note || '' }
         const updated = await api.updateTodo(todo.id, input)
         const i = this.todos.findIndex(t => t.id === todo.id); if (i > -1) this.todos.splice(i, 1, updated)
+        ElMessage.success('已保存待办')
       } catch (e) { ElMessage.error('更新待办失败：' + (e && e.message ? e.message : e)) }
     },
     async deleteTodo(id) {
@@ -188,6 +189,7 @@ export const useStore = defineStore('app', {
         const input = { name: p.name, cat: p.cat, goal: p.goal, time: p.time }
         const h = await api.createHabit(input)
         this.habits.push(h)
+        ElMessage.success('已创建习惯')
       } catch (e) { ElMessage.error('创建习惯失败：' + (e && e.message ? e.message : e)) }
     },
     async updateHabit(h) {
@@ -195,6 +197,7 @@ export const useStore = defineStore('app', {
         const input = { name: h.name, cat: h.cat, goal: h.goal, time: h.time }
         const updated = await api.updateHabit(h.id, input)
         const i = this.habits.findIndex(x => x.id === h.id); if (i > -1) this.habits.splice(i, 1, updated)
+        ElMessage.success('已保存习惯')
       } catch (e) { ElMessage.error('更新习惯失败：' + (e && e.message ? e.message : e)) }
     },
     async deleteHabit(id) {
@@ -209,7 +212,7 @@ export const useStore = defineStore('app', {
     },
     async addHabitCat(c) {
       if (c && !this.habitCats.includes(c)) {
-        try { await api.addHabitCat({ name: c }); this.habitCats.push(c) }
+        try { await api.addHabitCat({ name: c }); this.habitCats.push(c); ElMessage.success('已新增分类') }
         catch (e) { ElMessage.error('新增分类失败：' + (e && e.message ? e.message : e)) }
       }
     },
@@ -226,6 +229,7 @@ export const useStore = defineStore('app', {
         const q = await api.createQuote(input)
         this.quotes.unshift({ ...q, tags: quoteTags(q) })
         this.syncQuoteTags()
+        ElMessage.success('已创建名言')
       } catch (e) { ElMessage.error('创建名言失败：' + (e && e.message ? e.message : e)) }
     },
     async updateQuote(q) {
@@ -235,6 +239,7 @@ export const useStore = defineStore('app', {
         const m = { ...updated, tags: quoteTags(updated) }
         const i = this.quotes.findIndex(x => x.id === q.id); if (i > -1) this.quotes.splice(i, 1, m)
         this.syncQuoteTags()
+        ElMessage.success('已保存名言')
       } catch (e) { ElMessage.error('更新名言失败：' + (e && e.message ? e.message : e)) }
     },
     async deleteQuote(id) {
@@ -260,6 +265,7 @@ export const useStore = defineStore('app', {
         const input = { folder: p.folder, title: p.title, content: p.content, date: p.date || TODAY }
         const note = await api.createNote(input)
         this.notes.unshift(note)
+        ElMessage.success('已保存笔记')
       } catch (e) { ElMessage.error('保存笔记失败：' + (e && e.message ? e.message : e)) }
     },
     async updateNote(n) {
@@ -267,6 +273,7 @@ export const useStore = defineStore('app', {
         const input = { folder: n.folder, title: n.title, content: n.content, date: n.date }
         const updated = await api.updateNote(n.id, input)
         const i = this.notes.findIndex(x => x.id === n.id); if (i > -1) this.notes.splice(i, 1, updated)
+        ElMessage.success('已保存笔记')
       } catch (e) { ElMessage.error('更新笔记失败：' + (e && e.message ? e.message : e)) }
     },
     async deleteNote(id) {
@@ -281,6 +288,7 @@ export const useStore = defineStore('app', {
         const input = { date: p.date, weekday: p.weekday, location: p.location, weather: p.weather, text: p.text }
         const d = await api.createDiary(input)
         this.diaries.unshift(d)
+        ElMessage.success('已保存日记')
       } catch (e) { ElMessage.error('保存日记失败：' + (e && e.message ? e.message : e)) }
     },
     async updateDiary(d) {
@@ -288,6 +296,7 @@ export const useStore = defineStore('app', {
         const input = { date: d.date, weekday: d.weekday, location: d.location, weather: d.weather, text: d.text }
         const updated = await api.updateDiary(d.id, input)
         const i = this.diaries.findIndex(x => x.id === d.id); if (i > -1) this.diaries.splice(i, 1, updated)
+        ElMessage.success('已保存日记')
       } catch (e) { ElMessage.error('更新日记失败：' + (e && e.message ? e.message : e)) }
     },
     async deleteDiary(id) {
