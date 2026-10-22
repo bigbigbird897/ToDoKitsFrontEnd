@@ -49,7 +49,7 @@
             <el-table-column label="操作" width="120">
               <template #default="{ row }">
                 <el-button link type="primary" @click="openEdit(row)">编辑</el-button>
-                <el-button link type="danger" @click="store.deleteTodo(row.id)">删除</el-button>
+                <el-button link type="danger" @click="delTodo(row.id)">删除</el-button>
               </template>
             </el-table-column>
           </el-table></div>
@@ -120,7 +120,7 @@
 
     <el-dialog v-model="manageCat" title="管理待办分类" width="440px">
       <div class="cat-manage">
-        <el-tag v-for="c in store.todoCats" :key="c" closable @close="store.delTodoCat(c)" size="large">{{ c }}</el-tag>
+        <el-tag v-for="c in store.todoCats" :key="c" closable @close="delCat(c)" size="large">{{ c }}</el-tag>
       </div>
       <div style="display:flex;gap:8px;margin-top:14px">
         <el-input v-model="newCat" placeholder="新分类名称"></el-input>
@@ -132,6 +132,7 @@
 
 <script setup>
 import { computed, ref, reactive } from 'vue'
+import { ElMessageBox } from 'element-plus'
 import { useStore } from '../store'
 import RangeExport from '../components/RangeExport.vue'
 const store = useStore()
@@ -177,4 +178,11 @@ function save() {
   dlg.show = false
 }
 function addCat() { const c = newCat.value.trim(); if (c) { store.addTodoCat(c); newCat.value = '' } }
+async function delTodo(id) {
+  const r = await ElMessageBox.confirm('确定删除这条待办吗？', '删除待办', { type: 'warning', confirmButtonText: '删除', cancelButtonText: '取消' }).catch(() => false)
+  if (r) store.deleteTodo(id)
+}
+function delCat(c) {
+  ElMessageBox.confirm(`确定删除分类「${c}」吗？删除后该分类下待办不受影响。`, '删除分类', { type: 'warning', confirmButtonText: '删除', cancelButtonText: '取消' }).then(() => store.delTodoCat(c)).catch(() => {})
+}
 </script>

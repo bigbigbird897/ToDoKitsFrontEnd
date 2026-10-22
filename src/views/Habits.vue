@@ -34,7 +34,7 @@
           </div>
           <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px">
             <el-button link type="primary" @click="openEdit(h)">编辑</el-button>
-            <el-button link type="danger" @click="store.deleteHabit(h.id)">删除</el-button>
+            <el-button link type="danger" @click="delHabit(h.id)">删除</el-button>
           </div>
         </el-card>
       </el-col>
@@ -60,7 +60,7 @@
 
     <el-dialog v-model="manageCat" title="管理习惯分类" width="440px">
       <div class="cat-manage">
-        <el-tag v-for="c in store.habitCats" :key="c" closable @close="store.delHabitCat(c)" size="large">{{ c }}</el-tag>
+        <el-tag v-for="c in store.habitCats" :key="c" closable @close="delCat(c)" size="large">{{ c }}</el-tag>
       </div>
       <div style="display:flex;gap:8px;margin-top:14px">
         <el-input v-model="newCat" placeholder="新习惯分类"></el-input>
@@ -72,6 +72,7 @@
 
 <script setup>
 import { computed, ref, reactive } from 'vue'
+import { ElMessageBox } from 'element-plus'
 import RangeExport from '../components/RangeExport.vue'
 import { useStore } from '../store'
 const store = useStore()
@@ -84,4 +85,11 @@ function openAdd() { Object.assign(form, empty()); dlg.editing = false; dlg.show
 function openEdit(h) { Object.assign(form, { ...h }); dlg.editing = true; dlg.show = true }
 function save() { if (!form.name.trim()) return; if (dlg.editing) store.updateHabit({ ...form }); else store.addHabit({ ...form }); dlg.show = false }
 function addCat() { const c = newCat.value.trim(); if (c) { store.addHabitCat(c); newCat.value = '' } }
+async function delHabit(id) {
+  const r = await ElMessageBox.confirm('确定删除这个习惯吗？打卡记录会一并移除。', '删除习惯', { type: 'warning', confirmButtonText: '删除', cancelButtonText: '取消' }).catch(() => false)
+  if (r) store.deleteHabit(id)
+}
+function delCat(c) {
+  ElMessageBox.confirm(`确定删除分类「${c}」吗？删除后该分类下习惯不受影响。`, '删除分类', { type: 'warning', confirmButtonText: '删除', cancelButtonText: '取消' }).then(() => store.delHabitCat(c)).catch(() => {})
+}
 </script>

@@ -21,7 +21,7 @@
         <span>{{ qu.who }}{{ qu.src ? ' · 《' + qu.src + '》' : '' }}</span>
         <span style="display:flex;gap:8px">
           <el-button link type="primary" size="small" @click="openEdit(qu)">编辑</el-button>
-          <el-button link type="danger" size="small" @click="store.deleteQuote(qu.id)">删除</el-button>
+          <el-button link type="danger" size="small" @click="delQuote(qu.id)">删除</el-button>
         </span>
       </div>
     </div>
@@ -44,6 +44,7 @@
 
 <script setup>
 import { computed, ref, reactive } from 'vue'
+import { ElMessageBox } from 'element-plus'
 import RangeExport from '../components/RangeExport.vue'
 import { useStore } from '../store'
 const store = useStore()
@@ -63,5 +64,9 @@ function save() {
   form.tags = tagText.value.split(/[,，]/).map(s => s.trim()).filter(Boolean)
   if (dlg.editing) store.updateQuote({ ...form }); else store.addQuote({ ...form })
   dlg.show = false
+}
+async function delQuote(id) {
+  const r = await ElMessageBox.confirm('确定删除这条名言吗？', '删除名言', { type: 'warning', confirmButtonText: '删除', cancelButtonText: '取消' }).catch(() => false)
+  if (r) store.deleteQuote(id)
 }
 </script>

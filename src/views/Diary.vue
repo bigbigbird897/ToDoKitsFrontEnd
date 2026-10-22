@@ -40,7 +40,7 @@
         <div class="diary-attr" style="margin-bottom:8px">{{ form.date }} · {{ form.weekday }} · {{ form.location }} · {{ form.weather }}</div>
         <el-input v-model="form.text" type="textarea" :rows="10" placeholder="今天的感悟…" @keydown.tab.prevent="onTabKey"></el-input>
         <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
-          <el-button @click="store.deleteDiary(form.id)" :disabled="!form.id">删除</el-button>
+          <el-button @click="delDiary" :disabled="!form.id">删除</el-button>
           <el-button type="primary" @click="save">保存日记</el-button>
         </div>
       </el-card>
@@ -50,6 +50,7 @@
 
 <script setup>
 import { ref, reactive, computed } from 'vue'
+import { ElMessageBox } from 'element-plus'
 import RangeExport from '../components/RangeExport.vue'
 import { useStore } from '../store'
 const store = useStore()
@@ -76,5 +77,10 @@ function save() {
   if (form.id) store.updateDiary({ ...form })
   else { store.addDiary({ ...form }); }
   Object.assign(form, empty()); current.value = null
+}
+async function delDiary() {
+  if (!form.id) return
+  const r = await ElMessageBox.confirm('确定删除这篇日记吗？删除后不可恢复。', '删除日记', { type: 'warning', confirmButtonText: '删除', cancelButtonText: '取消' }).catch(() => false)
+  if (r) { store.deleteDiary(form.id); Object.assign(form, empty()); current.value = null }
 }
 </script>
